@@ -1,0 +1,23 @@
+{
+  "short_name": "SIAP WANAMSKA",
+  "name": "Sistem Absensi Penggalang Wanamska",
+  "description": "Aplikasi Absensi Gudep 04.109-04.110 SMPN 26 Surakarta",
+  "icons": [
+    {
+      "src": "https://i.ibb.co/vz6W7rX/logo-pramuka.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "https://i.ibb.co/vz6W7rX/logo-pramuka.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "start_url": "./index.html",
+  "display": "standalone",
+  "theme_color": "#6F4E37",
+  "background_color": "#ffffff"
+}
