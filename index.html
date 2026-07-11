@@ -83,7 +83,7 @@
             <section id="menu-profil" class="content-section hidden text-center">
                 <div class="bg-white p-6 rounded-3xl shadow-sm">
                     <div class="w-24 h-24 bg-gray-200 rounded-full mx-auto mb-4 overflow-hidden border-4 border-amber-800">
-                        <img id="profile-img" src="https://via.placeholder.com/150" class="w-full h-full object-cover">
+                        <img id="profile-img" src="https://via.placeholder.com/150" class="w-full h-full object-cover rounded-full">
                     </div>
                     <h3 id="profile-name" class="font-bold text-lg"></h3>
                     <p id="profile-role" class="text-amber-800 text-xs font-bold uppercase tracking-widest mb-6"></p>
@@ -102,8 +102,8 @@
     </div>
 
     <script>
-        // API URL BAPAK YANG SUDAH TERUJI
-        const API_URL = "https://script.google.com/macros/s/AKfycbplVy3RA0zTDjRYfrpKKcn4xjmEpqjHMKeNdaicZsRNkBhrJMrHLDK5X2igtvAIfWRNg/exec";
+        // API URL YANG SUDAH DIBETULKAN (DENGAN HURUF 'z')
+        const API_URL = "https://script.google.com/macros/s/AKfycbzplVy3RA0zTDjRYfrpKKcn4xjmEpqjHMKeNdaicZsRNkBhrJMrHLDK5X2igtvAIfWRNg/exec";
         
         let currentUser = null;
         let schoolSettings = null;
@@ -131,7 +131,7 @@
                     alert("Gagal: " + res.message);
                 }
             } catch (e) {
-                alert("Gangguan koneksi database.");
+                alert("Gangguan koneksi database. Periksa URL API.");
             } finally {
                 btn.innerText = "MASUK";
                 btn.disabled = false;
@@ -188,7 +188,6 @@
                 const lat = pos.coords.latitude;
                 const lng = pos.coords.longitude;
 
-                // Ambil Foto
                 const canvas = document.getElementById('canvas');
                 const video = document.getElementById('video');
                 canvas.width = video.videoWidth; canvas.height = video.videoHeight;
@@ -220,9 +219,37 @@
                 const rs = await fetch(`${API_URL}?action=getDashboardData`);
                 const st = await rs.json();
                 document.getElementById('stat-hadir').innerText = st.hadir;
-                const total = st.total_peserta + st.total_dewan;
-                document.getElementById('stat-alpa').innerText = total - st.hadir - st.izin - st.sakit;
+                const total = (st.total_peserta || 0) + (st.total_dewan || 0);
+                document.getElementById('stat-alpa').innerText = total > 0 ? (total - st.hadir - st.izin - st.sakit) : 0;
                 
                 new Chart(document.getElementById('attendanceChart'), {
                     type: 'doughnut',
-                    data:
+                    data: {
+                        datasets: [{ 
+                            data: [st.hadir, st.izin + st.sakit, (total - st.hadir)], 
+                            backgroundColor: ['#10b981', '#f59e0b', '#ef4444'] 
+                        }]
+                    },
+                    options: { cutout: '80%' }
+                });
+            } catch(e) {}
+        }
+
+        async function loadKegiatan() {
+            try {
+                const rs = await fetch(`${API_URL}?action=getKegiatan`);
+                const data = await rs.json();
+                const cont = document.getElementById('list-kegiatan');
+                cont.innerHTML = "";
+                data.forEach(i => {
+                    cont.innerHTML += `<div class="bg-white p-4 rounded-xl shadow-sm border-l-4 border-amber-800">
+                        <p class="text-[10px] font-bold text-amber-800 uppercase">${i.kategori}</p>
+                        <h3 class="font-bold">${i.judul}</h3>
+                        <p class="text-xs text-gray-500">${i.desc}</p>
+                    </div>`;
+                });
+            } catch(e) {}
+        }
+    </script>
+</body>
+</html>
