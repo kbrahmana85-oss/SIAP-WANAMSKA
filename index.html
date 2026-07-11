@@ -8,9 +8,6 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://unpkg.com/html5-qrcode"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
     <style>
         .bottom-nav { background: #6F4E37; }
         body { background-color: #f3f4f6; padding-bottom: 90px; font-family: sans-serif; }
@@ -32,7 +29,7 @@
         </div>
     </div>
 
-    <!-- MAIN APP (Disembunyikan sebelum login) -->
+    <!-- MAIN APP -->
     <div id="main-app" class="hidden">
         <header class="bg-amber-800 text-white p-4 flex justify-between items-center sticky top-0 z-50 shadow-md">
             <div class="flex items-center gap-2">
@@ -46,16 +43,11 @@
         </header>
 
         <main class="p-4 max-w-md mx-auto">
-            
-            <!-- MENU 1: BERANDA -->
+            <!-- BERANDA -->
             <section id="menu-home" class="content-section">
-                <h2 class="text-lg font-bold mb-4 text-gray-700 flex items-center gap-2">
-                    <i data-lucide="bar-chart-3" class="w-5 h-5"></i> Dashboard Kehadiran
-                </h2>
+                <h2 class="text-lg font-bold mb-4 text-gray-700 flex items-center gap-2"><i data-lucide="bar-chart-3" class="w-5 h-5"></i> Dashboard</h2>
                 <div class="bg-white p-5 rounded-2xl shadow-sm mb-6 flex flex-col items-center">
-                    <div class="w-full max-w-[200px]">
-                        <canvas id="attendanceChart"></canvas>
-                    </div>
+                    <div class="w-full max-w-[180px]"><canvas id="attendanceChart"></canvas></div>
                 </div>
                 <div class="grid grid-cols-2 gap-4">
                     <div class="bg-green-50 border-l-4 border-green-500 p-4 rounded-xl">
@@ -63,153 +55,89 @@
                         <p id="stat-hadir" class="text-2xl font-black text-green-800">0</p>
                     </div>
                     <div class="bg-red-50 border-l-4 border-red-500 p-4 rounded-xl">
-                        <p class="text-[10px] uppercase font-bold text-red-600">Belum Absen</p>
+                        <p class="text-[10px] uppercase font-bold text-red-600">Alpa</p>
                         <p id="stat-alpa" class="text-2xl font-black text-red-800">0</p>
                     </div>
                 </div>
             </section>
 
-            <!-- MENU 2: KEGIATAN -->
+            <!-- KEGIATAN -->
             <section id="menu-kegiatan" class="content-section hidden">
-                <h2 class="text-lg font-bold mb-4 text-gray-700 flex items-center gap-2">
-                    <i data-lucide="calendar-days" class="w-5 h-5"></i> Agenda & Berita
-                </h2>
-                <div id="list-kegiatan" class="space-y-4">
-                    <p class="text-gray-400 italic text-center py-10">Memuat data...</p>
-                </div>
+                <h2 class="text-lg font-bold mb-4 text-gray-700">Agenda & Berita</h2>
+                <div id="list-kegiatan" class="space-y-4"><p class="text-center text-gray-400">Memuat...</p></div>
             </section>
 
-            <!-- MENU 3: ABSENSI (ROLE BASED) -->
+            <!-- ABSENSI -->
             <section id="menu-absensi" class="content-section hidden">
-                <!-- Tampilan Peserta (Selfie & GPS) -->
                 <div id="view-peserta" class="hidden text-center">
                     <h2 class="text-lg font-bold mb-4">Selfie & Lokasi</h2>
                     <video id="video" class="w-full rounded-2xl bg-black mb-4" autoplay playsinline></video>
                     <canvas id="canvas" class="hidden"></canvas>
-                    <div id="loc-status-box" class="p-3 mb-4 rounded-lg bg-gray-100 text-xs flex items-center justify-center gap-2">
-                        <div id="loc-indicator" class="w-3 h-3 rounded-full bg-gray-400"></div>
-                        <span id="location-status">Melacak lokasi...</span>
-                    </div>
-                    <button id="btn-absen" onclick="takeAttendance()" class="bg-amber-800 text-white w-full py-4 rounded-xl font-bold shadow-lg">AMBIL FOTO & ABSEN</button>
+                    <p id="location-status" class="text-xs mb-4 text-gray-500">Melacak lokasi...</p>
+                    <button id="btn-absen" onclick="takeAttendance()" class="bg-amber-800 text-white w-full py-4 rounded-xl font-bold">KIRIM ABSENSI</button>
                 </div>
-
-                <!-- Tampilan Dewan Penggalang (QR Scanner) -->
-                <div id="view-dewan" class="hidden text-center">
-                    <h2 class="text-lg font-bold mb-4">Scan QR Peserta</h2>
-                    <div id="reader" class="w-full rounded-2xl overflow-hidden border-2 border-amber-800"></div>
-                    <p class="text-xs mt-4 text-gray-500">Arahkan kamera ke QR Code di Profil Peserta</p>
-                </div>
-
-                <!-- Tampilan Admin (Laporan) -->
-                <div id="view-admin" class="hidden text-center">
-                    <h2 class="text-lg font-bold mb-4">Rekapitulasi Laporan</h2>
-                    <div class="grid grid-cols-1 gap-4">
-                        <button onclick="exportExcel()" class="bg-green-600 text-white py-4 rounded-xl font-bold flex items-center justify-center gap-2 shadow-md">
-                            <i data-lucide="file-spreadsheet"></i> Export ke Excel
-                        </button>
-                        <button onclick="exportPDF()" class="bg-red-600 text-white py-4 rounded-xl font-bold flex items-center justify-center gap-2 shadow-md">
-                            <i data-lucide="file-text"></i> Export ke PDF
-                        </button>
-                    </div>
-                </div>
+                <div id="view-others" class="hidden text-center py-10 text-gray-500">Menu khusus Peserta</div>
             </section>
 
-            <!-- MENU 4: PROFIL -->
-            <section id="menu-profil" class="content-section hidden">
-                <div class="bg-white p-6 rounded-3xl shadow-sm text-center relative overflow-hidden">
-                    <div class="absolute top-0 left-0 w-full h-20 bg-amber-800"></div>
-                    <div class="relative z-10 mt-6">
-                        <div class="w-28 h-28 bg-white p-1 rounded-full mx-auto mb-4 shadow-lg border-4 border-white overflow-hidden">
-                            <img id="profile-img" src="https://via.placeholder.com/150" class="w-full h-full object-cover rounded-full">
-                        </div>
-                        <h3 id="profile-name" class="font-extrabold text-xl text-gray-800"></h3>
-                        <p id="profile-role" class="text-amber-700 font-bold text-xs uppercase tracking-widest mb-4"></p>
-                        <div id="qrcode-box" class="bg-gray-50 p-4 inline-block rounded-2xl border">
-                            <img id="qr-img" src="" class="w-32 h-32">
-                        </div>
-                        <button onclick="location.reload()" class="block w-full mt-8 text-red-500 font-bold text-sm bg-red-50 py-3 rounded-xl uppercase tracking-tighter">Keluar dari Aplikasi</button>
+            <!-- PROFIL -->
+            <section id="menu-profil" class="content-section hidden text-center">
+                <div class="bg-white p-6 rounded-3xl shadow-sm">
+                    <div class="w-24 h-24 bg-gray-200 rounded-full mx-auto mb-4 overflow-hidden border-4 border-amber-800">
+                        <img id="profile-img" src="https://via.placeholder.com/150" class="w-full h-full object-cover">
                     </div>
+                    <h3 id="profile-name" class="font-bold text-lg"></h3>
+                    <p id="profile-role" class="text-amber-800 text-xs font-bold uppercase tracking-widest mb-6"></p>
+                    <div class="bg-gray-50 p-4 inline-block rounded-xl border"><img id="qr-img" class="w-32 h-32"></div>
+                    <button onclick="location.reload()" class="block w-full mt-8 text-red-500 font-bold text-sm bg-red-50 py-3 rounded-xl">KELUAR</button>
                 </div>
             </section>
-
-            <!-- MENU 5: TENTANG -->
-            <section id="menu-tentang" class="content-section hidden">
-                <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
-                    <h2 class="font-black text-xl text-amber-800 mb-2 italic">SIAP WANAMSKA</h2>
-                    <p class="text-xs text-gray-500 leading-relaxed mb-6">Sistem digitalisasi absensi pramuka berbasis PWA untuk memudahkan pengelolaan kehadiran di Gugus Depan 04.109-04.110 SMP Negeri 26 Kota Surakarta.</p>
-                    <div class="bg-amber-50 p-5 rounded-2xl border-l-8 border-amber-800">
-                        <p class="text-[10px] font-bold text-amber-900 uppercase mb-1">Developer & Founder:</p>
-                        <p class="text-sm font-black text-gray-800">Arif Nuur Iswahyudi, S. Pd</p>
-                        <p class="text-xs text-gray-600 mt-1">Pembina Putra / Guru Matematika</p>
-                        <p class="text-xs text-gray-700 font-bold italic">SMP Negeri 26 Kota Surakarta</p>
-                    </div>
-                </div>
-            </section>
-
         </main>
 
-        <!-- NAVIGATION -->
         <nav class="bottom-nav fixed bottom-0 left-0 right-0 h-20 flex justify-around items-center text-white text-[10px] rounded-t-3xl shadow-2xl z-[100]">
-            <button onclick="showMenu('home')" class="flex flex-col items-center opacity-70 hover:opacity-100"><i data-lucide="home"></i><span>Beranda</span></button>
-            <button onclick="showMenu('kegiatan')" class="flex flex-col items-center opacity-70 hover:opacity-100"><i data-lucide="book-open"></i><span>Kegiatan</span></button>
-            <button onclick="showMenu('absensi')" class="flex flex-col items-center -mt-12 bg-amber-500 p-4 rounded-full shadow-2xl border-4 border-white text-amber-950">
-                <i data-lucide="map-pin" class="w-8 h-8"></i>
-            </button>
-            <button onclick="showMenu('profil')" class="flex flex-col items-center opacity-70 hover:opacity-100"><i data-lucide="user"></i><span>Profil</span></button>
-            <button onclick="showMenu('tentang')" class="flex flex-col items-center opacity-70 hover:opacity-100"><i data-lucide="info"></i><span>Tentang</span></button>
+            <button onclick="showMenu('home')" class="flex flex-col items-center opacity-70"><i data-lucide="home"></i><span>Beranda</span></button>
+            <button onclick="showMenu('kegiatan')" class="flex flex-col items-center opacity-70"><i data-lucide="book-open"></i><span>Kegiatan</span></button>
+            <button onclick="showMenu('absensi')" class="flex flex-col items-center -mt-12 bg-amber-500 p-4 rounded-full border-4 border-white text-amber-950"><i data-lucide="map-pin"></i></button>
+            <button onclick="showMenu('profil')" class="flex flex-col items-center opacity-70"><i data-lucide="user"></i><span>Profil</span></button>
         </nav>
     </div>
 
     <script>
-        const API_URL = "https://script.google.com/macros/s/AKfycbzplVy3RA0zTDjRYfrpKKcn4xjmEpqjHMKeNdaicZsRNkBhrJMrHLDK5X2igtvAIfWRNg/exec"; 
+        // API URL BAPAK YANG SUDAH TERUJI
+        const API_URL = "https://script.google.com/macros/s/AKfycbplVy3RA0zTDjRYfrpKKcn4xjmEpqjHMKeNdaicZsRNkBhrJMrHLDK5X2igtvAIfWRNg/exec";
+        
         let currentUser = null;
         let schoolSettings = null;
         let stream = null;
-        let html5QrScanner = null;
 
-        // 1. FUNGSI LOGIN
         async function handleLogin() {
-    const user = document.getElementById('username').value.trim();
-    const pass = document.getElementById('password').value.trim();
-    const btn = document.getElementById('login-btn');
+            const user = document.getElementById('username').value.trim();
+            const pass = document.getElementById('password').value.trim();
+            const btn = document.getElementById('login-btn');
 
-    if(!user || !pass) return alert("Silakan isi User ID dan Password!");
-    
-    btn.innerText = "Memverifikasi...";
-    btn.disabled = true;
+            if(!user || !pass) return alert("Isi User ID & Password!");
+            btn.innerText = "Memverifikasi...";
+            btn.disabled = true;
 
-    try {
-        // Cara pemanggilan URL yang lebih aman (menggunakan URLSearchParams)
-        const params = new URLSearchParams({
-            action: 'login',
-            username: user,
-            password: pass
-        });
-        
-        const finalUrl = `${API_URL}?${params.toString()}`;
-        console.log("Mencoba Login ke:", finalUrl); // Untuk debug
+            try {
+                const resp = await fetch(`${API_URL}?action=login&username=${encodeURIComponent(user)}&password=${encodeURIComponent(pass)}`);
+                const res = await resp.json();
 
-        const resp = await fetch(finalUrl);
-        const res = await resp.json();
-
-        if(res.status === 'success') {
-            currentUser = res.user;
-            document.getElementById('login-page').classList.add('hidden');
-            document.getElementById('main-app').classList.remove('hidden');
-            setupApp();
-        } else {
-            alert("Gagal: " + res.message);
+                if(res.status === 'success') {
+                    currentUser = res.user;
+                    document.getElementById('login-page').classList.add('hidden');
+                    document.getElementById('main-app').classList.remove('hidden');
+                    setupApp();
+                } else {
+                    alert("Gagal: " + res.message);
+                }
+            } catch (e) {
+                alert("Gangguan koneksi database.");
+            } finally {
+                btn.innerText = "MASUK";
+                btn.disabled = false;
+            }
         }
-    } catch (e) {
-        console.error(e);
-        alert("Gagal terhubung ke Database. Cek koneksi internet atau API_URL.");
-    } finally {
-        btn.innerText = "MASUK";
-        btn.disabled = false;
-    }
-}
 
-        // 2. SETUP APLIKASI SETELAH LOGIN
         async function setupApp() {
             lucide.createIcons();
             document.getElementById('display-name').innerText = currentUser.nama;
@@ -218,38 +146,83 @@
             document.getElementById('profile-role').innerText = currentUser.role;
             document.getElementById('qr-img').src = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${currentUser.qr}`;
             
-            // Atur tampilan menu absensi berdasarkan role
-            document.getElementById('view-peserta').classList.add('hidden');
-            document.getElementById('view-dewan').classList.add('hidden');
-            document.getElementById('view-admin').classList.add('hidden');
-
             if(currentUser.role === 'Peserta') {
                 document.getElementById('view-peserta').classList.remove('hidden');
-            } else if(currentUser.role === 'Dewan Penggalang') {
-                document.getElementById('view-dewan').classList.remove('hidden');
             } else {
-                document.getElementById('view-admin').classList.remove('hidden');
+                document.getElementById('view-others').classList.remove('hidden');
             }
 
-            // Ambil data pengaturan
             try {
-                const respSet = await fetch(`${API_URL}?action=getSettings`);
-                schoolSettings = await respSet.json();
-            } catch (e) { console.error("Gagal load settings"); }
+                const rs = await fetch(`${API_URL}?action=getSettings`);
+                schoolSettings = await rs.json();
+            } catch(e) {}
 
             loadStats();
             loadKegiatan();
         }
 
-        // 3. NAVIGASI MENU
-        function showMenu(menuId) {
+        function showMenu(m) {
             document.querySelectorAll('.content-section').forEach(s => s.classList.add('hidden'));
-            document.getElementById('menu-' + menuId).classList.remove('hidden');
-            
-            // Matikan kamera/scanner saat pindah menu
-            stopCamera();
-            stopQRScanner();
+            document.getElementById('menu-' + m).classList.remove('hidden');
+            if(m === 'absensi' && currentUser.role === 'Peserta') startCamera();
+            else stopCamera();
+            lucide.createIcons();
+        }
 
-            if(menuId === 'absensi') {
-                if(currentUser.role === 'Peserta') {
-                    startCamera();
+        async function startCamera() {
+            try {
+                stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" } });
+                document.getElementById('video').srcObject = stream;
+            } catch(e) { alert("Kamera gagal diakses."); }
+        }
+
+        function stopCamera() {
+            if(stream) stream.getTracks().forEach(t => t.stop());
+        }
+
+        async function takeAttendance() {
+            const btn = document.getElementById('btn-absen');
+            btn.disabled = true; btn.innerText = "Memproses...";
+
+            navigator.geolocation.getCurrentPosition(async (pos) => {
+                const lat = pos.coords.latitude;
+                const lng = pos.coords.longitude;
+
+                // Ambil Foto
+                const canvas = document.getElementById('canvas');
+                const video = document.getElementById('video');
+                canvas.width = video.videoWidth; canvas.height = video.videoHeight;
+                canvas.getContext('2d').drawImage(video, 0, 0);
+                const foto = canvas.toDataURL('image/jpeg', 0.5);
+
+                try {
+                    const resp = await fetch(API_URL, {
+                        method: 'POST',
+                        body: JSON.stringify({
+                            action: 'submitAbsensi',
+                            user_id: currentUser.user_id,
+                            nama: currentUser.nama,
+                            status: 'Hadir',
+                            lat: lat, long: lng,
+                            foto: foto, metode: 'GPS-PWA'
+                        })
+                    });
+                    const res = await resp.json();
+                    alert(res.message);
+                    showMenu('home'); loadStats();
+                } catch(e) { alert("Gagal kirim data."); }
+                finally { btn.disabled = false; btn.innerText = "KIRIM ABSENSI"; }
+            }, () => { alert("Aktifkan GPS!"); btn.disabled = false; btn.innerText = "KIRIM ABSENSI"; });
+        }
+
+        async function loadStats() {
+            try {
+                const rs = await fetch(`${API_URL}?action=getDashboardData`);
+                const st = await rs.json();
+                document.getElementById('stat-hadir').innerText = st.hadir;
+                const total = st.total_peserta + st.total_dewan;
+                document.getElementById('stat-alpa').innerText = total - st.hadir - st.izin - st.sakit;
+                
+                new Chart(document.getElementById('attendanceChart'), {
+                    type: 'doughnut',
+                    data:
