@@ -169,33 +169,45 @@
 
         // 1. FUNGSI LOGIN
         async function handleLogin() {
-            const user = document.getElementById('username').value.trim();
-            const pass = document.getElementById('password').value.trim();
-            const btn = document.getElementById('login-btn');
+    const user = document.getElementById('username').value.trim();
+    const pass = document.getElementById('password').value.trim();
+    const btn = document.getElementById('login-btn');
 
-            if(!user || !pass) return alert("Silakan isi User ID dan Password!");
-            btn.innerText = "Memverifikasi...";
-            btn.disabled = true;
+    if(!user || !pass) return alert("Silakan isi User ID dan Password!");
+    
+    btn.innerText = "Memverifikasi...";
+    btn.disabled = true;
 
-            try {
-                const resp = await fetch(`${API_URL}?action=login&username=${encodeURIComponent(user)}&password=${encodeURIComponent(pass)}`);
-                const res = await resp.json();
+    try {
+        // Cara pemanggilan URL yang lebih aman (menggunakan URLSearchParams)
+        const params = new URLSearchParams({
+            action: 'login',
+            username: user,
+            password: pass
+        });
+        
+        const finalUrl = `${API_URL}?${params.toString()}`;
+        console.log("Mencoba Login ke:", finalUrl); // Untuk debug
 
-                if(res.status === 'success') {
-                    currentUser = res.user;
-                    document.getElementById('login-page').classList.add('hidden');
-                    document.getElementById('main-app').classList.remove('hidden');
-                    setupApp();
-                } else {
-                    alert(res.message);
-                }
-            } catch (e) {
-                alert("Gagal terhubung ke Database. Cek koneksi Anda.");
-            } finally {
-                btn.innerText = "MASUK";
-                btn.disabled = false;
-            }
+        const resp = await fetch(finalUrl);
+        const res = await resp.json();
+
+        if(res.status === 'success') {
+            currentUser = res.user;
+            document.getElementById('login-page').classList.add('hidden');
+            document.getElementById('main-app').classList.remove('hidden');
+            setupApp();
+        } else {
+            alert("Gagal: " + res.message);
         }
+    } catch (e) {
+        console.error(e);
+        alert("Gagal terhubung ke Database. Cek koneksi internet atau API_URL.");
+    } finally {
+        btn.innerText = "MASUK";
+        btn.disabled = false;
+    }
+}
 
         // 2. SETUP APLIKASI SETELAH LOGIN
         async function setupApp() {
