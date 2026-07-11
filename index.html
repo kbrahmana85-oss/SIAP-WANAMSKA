@@ -1,181 +1,347 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-    <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>SIAP WANAMSKA</title>
     <script src="https://cdn.tailwindcss.com"></script><script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        .bottom-nav { background: #6F4E37; }
-        body { background-color: #f8fafc; padding-bottom: 120px; font-family: sans-serif; }
-        .glass-header { background: linear-gradient(135deg, #6F4E37 0%, #3d2b1e 100%); }
-        .star-on { color: #facc15; fill: #facc15; } .star-off { color: #e2e8f0; fill: #e2e8f0; }
-        .label-detil { @apply text-[9px] font-bold text-slate-400 uppercase; } 
-        .isi-detil { @apply text-sm font-bold text-slate-700 leading-tight; }
+        :root { --majesty-chocolate: #3D2B1F; --majesty-red: #D32F2F; --majesty-amber: #F1C40F; --majesty-bg: #FDF8F5; }
+        .bottom-nav { background: var(--majesty-chocolate); border-radius: 40px 40px 0 0; }
+        body { background-color: var(--majesty-bg); padding-bottom: 110px; font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
+        .majesty-header { background: linear-gradient(135deg, #3D2B1F 0%, #6F4E37 100%); }
+        .majesty-btn { background: var(--majesty-red); transition: 0.3s; box-shadow: 0 10px 15px -3px rgba(211, 47, 47, 0.4); }
+        .majesty-btn:active { transform: scale(0.95); opacity: 0.9; }
+        .majesty-card { background: white; border-radius: 35px; border-left: 8px solid var(--majesty-chocolate); box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); }
+        .star-on { color: var(--majesty-amber); fill: var(--majesty-amber); } .star-off { color: #E2E8F0; fill: #E2E8F0; }
+        .section-ani { animation: slideIn 0.4s ease-out; } @keyframes slideIn { from { opacity:0; transform:translateY(15px); } to { opacity:1; transform:translateY(0); } }
     </style>
 </head>
 <body>
-    <div id="modal-edit" class="fixed inset-0 bg-black/70 z-[200] hidden items-center justify-center p-6 backdrop-blur-md">
-        <div class="bg-white w-full max-w-md rounded-[40px] p-8">
-            <h2 class="font-black text-slate-800 mb-6 italic uppercase flex gap-2"><i data-lucide="edit-3"></i> EDIT PROFIL</h2>
-            <div class="space-y-4 max-h-[50vh] overflow-y-auto">
-                <input type="password" id="e-pass" class="w-full p-4 bg-slate-50 border rounded-2xl outline-none" placeholder="Ganti Password">
-                <input type="text" id="e-regu" placeholder="Nama Regu" class="w-full p-4 bg-slate-50 border rounded-2xl outline-none">
-                <textarea id="e-alamat" placeholder="Alamat" class="w-full p-4 bg-slate-50 border rounded-2xl outline-none"></textarea>
-                <input type="text" id="e-ortu" placeholder="Nama Orang Tua" class="w-full p-4 bg-slate-50 border rounded-2xl outline-none">
-                <input type="text" id="e-kerja" placeholder="Pekerjaan Orang Tua" class="w-full p-4 bg-slate-50 border rounded-2xl outline-none">
+
+    <!-- OVERLAYS: EDIT PROFIL -->
+    <div id="modal-edit" class="fixed inset-0 bg-black/70 z-[300] hidden items-center justify-center p-6 backdrop-blur-md">
+        <div class="bg-white w-full max-w-md rounded-[45px] p-8 shadow-2xl section-ani">
+            <h2 class="text-xl font-black text-slate-800 mb-6 italic uppercase flex gap-3"><i data-lucide="edit-3" class="text-amber-600"></i> Majesty Profile</h2>
+            <div class="space-y-4 max-h-[50vh] overflow-y-auto px-2">
+                <div class="bg-slate-50 p-4 rounded-3xl"><label class="text-[9px] font-black text-slate-400 block mb-1">GANTI PASSWORD</label><input type="password" id="e-pass" class="w-full bg-transparent font-bold outline-none" placeholder="Isi hanya jika diubah"></div>
+                <div class="bg-slate-50 p-4 rounded-3xl"><label class="text-[9px] font-black text-slate-400 block mb-1">NAMA REGU / SAKO</label><input type="text" id="e-regu" class="w-full bg-transparent font-bold outline-none"></div>
+                <div class="bg-slate-50 p-4 rounded-3xl"><label class="text-[9px] font-black text-slate-400 block mb-1">ALAMAT TINGGAL</label><textarea id="e-alamat" class="w-full bg-transparent font-bold outline-none" rows="2"></textarea></div>
+                <div class="bg-slate-50 p-4 rounded-3xl"><label class="text-[9px] font-black text-slate-400 block mb-1">NAMA AYAH/IBU</label><input type="text" id="e-ortu" class="w-full bg-transparent font-bold outline-none"></div>
+                <div class="bg-slate-50 p-4 rounded-3xl"><label class="text-[9px] font-black text-slate-400 block mb-1">PEKERJAAN ORTU</label><input type="text" id="e-kerja" class="w-full bg-transparent font-bold outline-none"></div>
             </div>
-            <div class="flex gap-2 mt-6">
-                <button onclick="closeModal()" class="flex-1 font-bold text-slate-300">BATAL</button>
-                <button onclick="saveEdit()" class="flex-1 bg-amber-800 text-white py-4 rounded-2xl font-bold shadow-lg">SIMPAN</button>
+            <div class="flex gap-2 mt-8">
+                <button onclick="closeModal()" class="flex-1 py-4 font-bold text-slate-300">BATAL</button>
+                <button onclick="saveEdit()" id="btn-save" class="flex-1 majesty-btn text-white py-4 rounded-[25px] font-black tracking-widest shadow-xl">SIMPAN</button>
             </div>
         </div>
     </div>
 
-    <div id="login-page" class="min-h-screen flex items-center justify-center p-6 bg-slate-100 text-center">
-        <div class="bg-white p-10 rounded-[50px] shadow-2xl w-full max-w-md border-t-8 border-amber-900">
-            <img src="logo.png" class="w-20 mx-auto mb-4" onerror="this.src='https://i.ibb.co/vz6W7rX/logo-pramuka.png'">
-            <h1 class="text-xl font-black">SIAP WANAMSKA</h1>
-            <div class="mt-8 space-y-4">
-                <input type="text" id="username" placeholder="User ID" class="w-full p-4 border rounded-2xl outline-none">
-                <input type="password" id="password" placeholder="Password" class="w-full p-4 border rounded-2xl outline-none">
-                <button onclick="handleLogin()" id="btn-login" class="w-full bg-amber-800 text-white p-4 rounded-2xl font-black shadow-xl">MASUK</button>
+    <!-- OVERLAYS: TAMBAH AGENDA -->
+    <div id="modal-keg" class="fixed inset-0 bg-black/70 z-[300] hidden items-center justify-center p-6 backdrop-blur-md">
+        <div class="bg-white w-full max-w-md rounded-[45px] p-8 section-ani">
+            <h2 class="text-xl font-black text-slate-800 mb-6 italic uppercase flex gap-2"><i data-lucide="calendar-plus"></i> Majesty Agenda</h2>
+            <div class="space-y-4">
+                <input type="text" id="k-judul" placeholder="Nama Kegiatan" class="w-full p-4 bg-slate-50 border rounded-2xl outline-none">
+                <input type="date" id="k-tgl" class="w-full p-4 bg-slate-50 border rounded-2xl outline-none text-xs">
+                <textarea id="k-desc" placeholder="Keterangan agenda" class="w-full p-4 bg-slate-50 border rounded-2xl outline-none" rows="3"></textarea>
+            </div>
+            <div class="flex gap-2 mt-8">
+                <button onclick="closeModalKeg()" class="flex-1 py-4 font-bold text-slate-300">BATAL</button>
+                <button onclick="saveKeg()" class="flex-1 bg-amber-600 text-white py-4 rounded-[25px] font-black shadow-xl">UMUMKAN</button>
             </div>
         </div>
     </div>
 
+    <!-- PAGE: LOGIN MAJESTY -->
+    <div id="login-page" class="min-h-screen flex items-center justify-center p-6 bg-slate-100">
+        <div class="bg-white p-10 rounded-[55px] shadow-[0_20px_50px_rgba(0,0,0,0.1)] w-full max-w-md text-center border-t-[12px] border-[#3D2B1F]">
+            <img src="logo.png" class="w-24 mx-auto mb-6 drop-shadow-xl" onerror="this.src='https://i.ibb.co/vz6W7rX/logo-pramuka.png'">
+            <h1 class="text-2xl font-black text-[#3D2B1F] tracking-tighter uppercase mb-1">Siap Wanamska</h1>
+            <p class="text-[9px] font-black uppercase text-amber-600 bg-amber-50 px-4 py-1.5 rounded-full inline-block mb-10 tracking-[0.2em]">Pramuka SMPN 26 Surakarta</p>
+            <div class="space-y-5">
+                <div class="relative"><i data-lucide="user" class="absolute left-4 top-4 text-slate-300 w-5 h-5"></i><input type="text" id="username" placeholder="USER ID" class="w-full pl-12 p-4 bg-slate-50 rounded-2xl outline-none border-2 border-transparent focus:border-[#3D2B1F] transition-all"></div>
+                <div class="relative"><i data-lucide="lock" class="absolute left-4 top-4 text-slate-300 w-5 h-5"></i><input type="password" id="password" placeholder="SANDI" class="w-full pl-12 p-4 bg-slate-50 rounded-2xl outline-none border-2 border-transparent focus:border-[#3D2B1F] transition-all"></div>
+                <button onclick="handleLogin()" id="btn-login" class="w-full bg-[#3D2B1F] text-white p-5 rounded-[25px] font-black shadow-2xl tracking-[0.2em] active:scale-95 transition-all">OTENTIKASI</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- APP WRAPPER -->
     <div id="main-app" class="hidden">
-        <header class="glass-header text-white p-6 sticky top-0 z-[100] rounded-b-[40px] shadow-2xl">
-            <div class="flex justify-between items-center">
-                <div class="flex items-center gap-3"><img src="logo.png" class="w-10 h-10 brightness-200" onerror="this.src='https://i.ibb.co/vz6W7rX/logo-pramuka.png'"><p class="font-black text-sm uppercase">Wanamska</p></div>
-                <div class="text-right"><p id="clock" class="text-xl font-black leading-none"></p><p id="date" class="text-[8px] font-bold opacity-60 mt-1 uppercase"></p></div>
+        <header class="majesty-header text-white p-7 sticky top-0 z-[100] rounded-b-[50px] shadow-2xl">
+            <div class="flex justify-between items-start">
+                <div class="flex items-center gap-3">
+                    <img src="logo.png" class="w-12 h-12 brightness-200" onerror="this.src='https://i.ibb.co/vz6W7rX/logo-pramuka.png'">
+                    <div><h1 class="font-black text-base tracking-tighter uppercase leading-none">Wanamska</h1><p class="text-[8px] font-bold opacity-50 uppercase tracking-[0.2em] mt-1">Majesty Edition v3</p></div>
+                </div>
+                <div class="text-right">
+                    <p id="clock" class="text-2xl font-black leading-none tabular-nums"></p>
+                    <p id="date" class="text-[8px] font-bold opacity-50 mt-1 uppercase tracking-widest"></p>
+                </div>
+            </div>
+            <div class="mt-6 p-4 bg-black/20 rounded-[25px] border border-white/10 backdrop-blur-lg flex justify-between items-center">
+                <div class="text-left"><p class="text-[7px] font-black opacity-60 uppercase mb-1">USER STATUS</p><div class="flex gap-2 items-center"><h3 id="u-name" class="text-[11px] font-black uppercase">---</h3><span id="u-role" class="bg-majesty-amber text-[#3D2B1F] text-[7px] font-black px-2 py-0.5 rounded-full uppercase">---</span></div></div>
+                <button onclick="location.reload()" class="bg-majesty-red p-2.5 rounded-xl majesty-btn shadow-none"><i data-lucide="power" class="w-5 h-5 text-white"></i></button>
             </div>
         </header>
 
-        <main class="p-5 max-w-md mx-auto">
-            <section id="menu-home" class="content-section">
-                <div class="flex justify-between items-center mb-4"><h2 class="font-black italic uppercase">Dashboard</h2><div id="stars-top" class="flex gap-0.5"></div></div>
-                <div class="bg-white p-8 rounded-[40px] border shadow-sm text-center mb-6">
-                    <p class="text-[9px] font-bold text-slate-400 mb-2">KEHADIRAN GLOBAL HARI INI</p>
-                    <h3 id="g-persen" class="text-6xl font-black text-amber-900">0%</h3>
-                </div>
-            </section>
-
-            <section id="menu-absensi" class="content-section hidden">
-                <div id="tipe-box" class="space-y-4">
-                    <div id="petugas-box" class="hidden bg-amber-50 p-4 rounded-3xl border border-amber-200 mb-4 text-xs font-bold">
-                        <label class="text-amber-800 mb-1 block">PETUGAS PIKET</label>
-                        <input type="text" id="i-petugas" class="w-full p-3 rounded-xl border-none outline-none" placeholder="Nama Petugas">
+        <main class="p-6 max-w-md mx-auto space-y-8">
+            <!-- SECTION HOME -->
+            <section id="menu-home" class="section-ani space-y-6">
+                <!-- Majesty Headlines -->
+                <div class="bg-gradient-to-br from-[#3D2B1F] to-[#6F4E37] p-8 rounded-[45px] text-white shadow-2xl relative overflow-hidden">
+                    <div class="absolute -right-4 -bottom-4 opacity-5 rotate-12"><i data-lucide="map-pin" class="w-40 h-40"></i></div>
+                    <div class="relative z-10">
+                        <p class="text-[8px] font-black tracking-[0.3em] opacity-50 mb-2 uppercase">LOKASI AKTIF</p>
+                        <h2 id="current-loc" class="text-lg font-black uppercase italic leading-tight mb-4">---</h2>
+                        <div id="stars-top" class="flex gap-1.5"></div>
                     </div>
-                    <button id="tipe-dewan" onclick="openCam('Latihan Dewan')" class="hidden w-full bg-slate-900 text-white p-6 rounded-[30px] flex justify-between shadow-xl"><span>LATIHAN DEWAN</span><i data-lucide="crown"></i></button>
-                    <button onclick="openCam('Pramuka Wajib')" class="w-full bg-amber-800 text-white p-6 rounded-[30px] flex justify-between shadow-xl"><span>PRAMUKA WAJIB</span><i data-lucide="shield-check"></i></button>
                 </div>
-                <div id="cam-box" class="hidden text-center"><div class="rounded-[40px] overflow-hidden bg-black mb-6"><video id="video" class="w-full h-full object-cover" autoplay playsinline></video></div><button onclick="sendAbsen()" class="bg-amber-800 text-white w-full py-5 rounded-3xl font-black shadow-xl">KIRIM ABSENSI</button></div>
+
+                <!-- Role Based Stats -->
+                <div id="view-mgr" class="hidden majesty-card p-10 text-center">
+                    <p class="text-[10px] font-black text-slate-400 mb-4 uppercase tracking-[0.2em]">STATISTIK KEHADIRAN MASSA</p>
+                    <h3 id="g-persen" class="text-7xl font-black text-[#3D2B1F] leading-none">0%</h3>
+                    <div class="flex justify-around mt-8 border-t pt-6 text-[#3D2B1F]">
+                        <div class="text-center"><p id="s-h" class="font-black text-lg">0</p><p class="text-[8px] font-bold opacity-40 uppercase">Hadir</p></div>
+                        <div class="text-center"><p id="s-t" class="font-black text-lg">0</p><p class="text-[8px] font-bold opacity-40 uppercase">Basis</p></div>
+                    </div>
+                </div>
+
+                <div id="view-usr" class="hidden grid grid-cols-1 gap-4">
+                    <div class="bg-white p-8 rounded-[45px] border shadow-sm flex flex-col items-center">
+                        <div class="w-36 h-36 mb-4"><canvas id="p-chart"></canvas></div>
+                        <p id="p-p" class="font-black text-2xl text-[#3D2B1F] leading-none"></p>
+                        <p class="text-[9px] font-black text-slate-400 uppercase mt-2 tracking-widest">LOYALITAS SAYA</p>
+                    </div>
+                </div>
+
+                <!-- Info Guide -->
+                <div class="p-8 bg-amber-50 rounded-[45px] border-2 border-dashed border-amber-200">
+                    <h4 class="font-black text-xs text-amber-900 mb-4 flex gap-2 uppercase italic"><i data-lucide="book-open"></i> PANDUAN PENGGUNAAN</h4>
+                    <div class="space-y-4 text-[10px] text-amber-800/80 font-semibold leading-relaxed">
+                        <div class="flex gap-3"><span class="w-5 h-5 bg-white rounded-full flex items-center justify-center font-black">1</span><p>Menu <b>LOGAM</b> (Sidik Jari) tengah adalah tombol absensi cerdas.</p></div>
+                        <div class="flex gap-3"><span class="w-5 h-5 bg-white rounded-full flex items-center justify-center font-black">2</span><p>Pilih <b>Sesi Latihan</b> dan siapkan <b>Selfie</b> terbaikmu!</p></div>
+                        <div class="flex gap-3"><span class="w-5 h-5 bg-white rounded-full flex items-center justify-center font-black">3</span><p>Update Data Diri melalui menu <b>PROFIL</b> untuk piagam digital.</p></div>
+                    </div>
+                </div>
             </section>
 
-            <section id="menu-profil" class="content-section hidden">
-                <div class="bg-white p-8 rounded-[50px] shadow-xl text-center border relative overflow-hidden">
-                    <div class="absolute top-0 left-0 w-full h-24 bg-amber-800"></div>
-                    <div class="relative z-10 mt-6">
-                        <img id="p-foto" src="https://i.ibb.co/MDv4Byw/default-user.png" class="w-24 h-24 rounded-full mx-auto mb-4 border-4 border-white shadow-xl">
-                        <h3 id="p-full-name" class="font-black text-lg"></h3>
-                        <p id="p-role-txt" class="text-amber-800 text-[10px] font-black uppercase mb-4"></p>
-                        <div id="p-stars-ui" class="flex justify-center gap-1.5 mb-6"></div>
-                        <div class="grid grid-cols-2 gap-4 text-left bg-slate-50 p-5 rounded-[30px] border">
-                            <div><p class="label-detil">Regu</p><p id="pp-regu" class="isi-detil">-</p></div>
-                            <div><p class="label-detil">Kelas</p><p id="pp-kelas" class="isi-detil">-</p></div>
+            <!-- SECTION AGENDA -->
+            <section id="menu-kegiatan" class="hidden section-ani">
+                <div class="flex justify-between items-end mb-6">
+                    <div><h2 class="text-2xl font-black text-slate-800 uppercase leading-none">Agenda</h2><p class="text-[9px] font-bold text-slate-400 tracking-[0.2em] mt-1">PROGRAM KERJA GUDEP</p></div>
+                    <button id="add-k" onclick="openModalKeg()" class="hidden majesty-btn text-white p-4 rounded-3xl shadow-xl active:rotate-90 transition-all"><i data-lucide="plus"></i></button>
+                </div>
+                <div id="list-keg" class="space-y-5"></div>
+            </section>
+
+            <!-- SECTION ABSENSI -->
+            <section id="menu-absensi" class="hidden section-ani">
+                <div id="t-box" class="space-y-5">
+                    <h2 class="text-center font-black mb-6 italic text-slate-800 text-lg">PILIH REGULASI HADIR</h2>
+                    <div id="pet-box" class="hidden bg-majesty-bg p-6 rounded-[35px] border-2 border-dashed border-amber-300 mb-6">
+                        <label class="text-[8px] font-black text-[#3D2B1F] mb-2 block tracking-widest uppercase">PEMBINA / PETUGAS PIKET</label>
+                        <input type="text" id="i-p" class="w-full bg-white p-4 rounded-2xl outline-none font-black text-amber-900 text-sm shadow-inner uppercase">
+                    </div>
+                    <button id="t-dewan" onclick="openC('Latihan Dewan')" class="hidden w-full bg-majesty-chocolate text-white p-8 rounded-[45px] flex justify-between shadow-2xl active:translate-y-2 transition-all items-center">
+                        <div class="text-left"><h3 class="font-black text-xl italic leading-none">MAJESTY DEWAN</h3><p class="text-[9px] opacity-40 font-bold uppercase tracking-widest mt-1">Staff Khusus Gudep</p></div>
+                        <i data-lucide="shield-check" class="w-10 h-10 opacity-20"></i>
+                    </button>
+                    <button onclick="openC('Pramuka Wajib')" class="w-full majesty-btn text-white p-8 rounded-[45px] flex justify-between shadow-2xl active:translate-y-2 transition-all items-center">
+                        <div class="text-left"><h3 class="font-black text-xl italic leading-none">PRAMUKA WAJIB</h3><p class="text-[9px] opacity-40 font-bold uppercase tracking-widest mt-1">Kesatuan Seluruh Penggalang</p></div>
+                        <i data-lucide="flag" class="w-10 h-10 opacity-20"></i>
+                    </button>
+                </div>
+                <div id="cam-box" class="hidden text-center">
+                    <h3 id="c-tipe" class="text-[10px] font-black uppercase mb-4 text-amber-800 bg-amber-100 inline-block px-5 py-2 rounded-full tracking-widest"></h3>
+                    <div class="rounded-[55px] overflow-hidden bg-black mb-8 border-[6px] border-white shadow-2xl relative aspect-square"><video id="vid" class="w-full h-full object-cover" autoplay playsinline></video></div>
+                    <button id="btn-final" onclick="sendA()" class="w-full majesty-header text-white py-6 rounded-[35px] font-black shadow-2xl tracking-[0.2em] active:scale-95 transition-all text-sm">PROSES SINKRONISASI</button>
+                    <button onclick="location.reload()" class="mt-6 text-[10px] font-black text-slate-400 uppercase tracking-widest underline decoration-2 decoration-amber-500 underline-offset-4">BATALKAN</button>
+                </div>
+            </section>
+
+            <!-- SECTION PROFIL -->
+            <section id="menu-profil" class="hidden section-ani">
+                <div class="bg-white p-10 rounded-[60px] shadow-2xl text-center border relative overflow-hidden">
+                    <div class="majesty-header absolute top-0 left-0 w-full h-36"></div>
+                    <div class="relative z-10">
+                        <div class="relative w-36 h-36 mx-auto mb-6 group">
+                            <img id="p-f" src="https://i.ibb.co/MDv4Byw/default-user.png" class="w-full h-full rounded-full border-8 border-white shadow-2xl object-cover transition-all">
+                            <button onclick="document.getElementById('i-f').click()" class="absolute bottom-2 right-2 bg-[#3D2B1F] text-white p-3 rounded-full border-4 border-white shadow-xl majesty-btn shadow-none"><i data-lucide="camera" class="w-5 h-5"></i></button>
+                            <input type="file" id="i-f" class="hidden" accept="image/*" onchange="upFoto(this)">
                         </div>
-                        <button onclick="openModal()" class="w-full mt-8 bg-slate-900 text-white py-4 rounded-2xl font-black text-xs uppercase shadow-lg">Edit Profil</button>
-                        <button onclick="location.reload()" class="w-full mt-2 text-rose-500 font-bold text-xs uppercase">Logout</button>
+                        <h3 id="p-full" class="font-black text-slate-800 text-2xl uppercase tracking-tighter leading-tight">---</h3>
+                        <div id="p-stars-ui" class="flex justify-center gap-1.5 my-5"></div>
+                        <div class="grid grid-cols-2 gap-4 text-left bg-slate-50 p-7 rounded-[40px] border border-slate-100 shadow-inner">
+                            <div><p class="label-detil">Regu</p><p id="pp-r" class="isi-detil">---</p></div>
+                            <div><p class="label-detil">Kelas</p><p id="pp-k" class="isi-detil">---</p></div>
+                            <div class="col-span-2 border-t pt-4 border-slate-200"><p class="label-detil">No. NTA</p><p id="pp-n" class="isi-detil">---</p></div>
+                        </div>
+                        <div class="flex gap-3 mt-8">
+                            <button onclick="openModal()" class="flex-1 bg-slate-800 text-white py-5 rounded-3xl font-black text-xs tracking-widest uppercase">Perbarui Data</button>
+                        </div>
                     </div>
+                </div>
+            </section>
+
+            <!-- SECTION INFO DEVELOPER -->
+            <section id="menu-tentang" class="hidden section-ani space-y-6">
+                <div class="majesty-header rounded-[50px] p-10 text-white shadow-2xl text-center">
+                    <img src="logo.png" class="w-20 mx-auto mb-6 brightness-200" onerror="this.src='https://i.ibb.co/vz6W7rX/logo-pramuka.png'">
+                    <h2 class="font-black text-2xl tracking-tighter uppercase italic leading-none mb-1">SIAP WANAMSKA</h2>
+                    <p class="text-[9px] font-black opacity-60 uppercase tracking-[0.2em] mt-3">Executive Digital System 2026</p>
+                </div>
+                <div class="majesty-card p-10 space-y-6 border-l-[10px]">
+                    <div class="flex items-center gap-5"><div class="majesty-btn p-4 rounded-3xl text-white shadow-none"><i data-lucide="user-cog" class="w-7 h-7"></i></div><div><p class="text-[8px] font-black text-slate-300 uppercase tracking-widest">SYSTEM ARCHITECT</p><h4 class="font-black text-slate-800 text-lg">Arif Nuur Iswahyudi, S. Pd</h4></div></div>
+                    <div class="flex items-center gap-5 pt-4 border-t border-slate-50"><div class="bg-amber-100 p-4 rounded-3xl text-amber-800 shadow-none"><i data-lucide="map" class="w-7 h-7"></i></div><div><p class="text-[8px] font-black text-slate-300 uppercase tracking-widest">STATION BASE</p><h4 class="font-black text-slate-800 text-xs italic uppercase">SMP Negeri 26 Surakarta</h4></div></div>
                 </div>
             </section>
         </main>
 
-        <nav class="bottom-nav fixed bottom-0 left-0 right-0 h-24 flex justify-around items-center rounded-t-[45px] shadow-2xl z-[200]">
-            <button onclick="showMenu('home')" class="text-white opacity-60"><i data-lucide="home"></i></button>
-            <button onclick="showMenu('absensi')" class="-mt-16 bg-white p-5 rounded-full shadow-2xl text-amber-950 border-8 border-slate-100"><i data-lucide="camera"></i></button>
-            <button onclick="showMenu('profil')" class="text-white opacity-60"><i data-lucide="user"></i></button>
+        <!-- NAVIGATION -->
+        <nav class="bottom-nav fixed bottom-0 left-0 right-0 h-28 flex justify-around items-center z-[200] px-6 transition-all border-t-[8px] border-white/5">
+            <button onclick="showMenu('home')" class="text-white nav-it flex flex-col items-center opacity-60"><i data-lucide="grid-2x2"></i><span class="text-[7px] font-black mt-1">MAIN</span></button>
+            <button onclick="showMenu('kegiatan')" class="text-white nav-it flex flex-col items-center opacity-60"><i data-lucide="compass"></i><span class="text-[7px] font-black mt-1 uppercase">Event</span></button>
+            <button onclick="showMenu('absensi')" class="-mt-20 bg-white p-6 rounded-full shadow-[0_20px_50px_rgba(61,43,31,0.5)] text-[#3D2B1F] border-[10px] border-majesty-bg active:scale-90 transition-all">
+                <i data-lucide="fingerprint" class="w-10 h-10"></i>
+            </button>
+            <button id="nav-p" onclick="showMenu('profil')" class="text-white nav-it flex flex-col items-center opacity-60"><i data-lucide="smile"></i><span class="text-[7px] font-black mt-1">PROFIL</span></button>
+            <button onclick="showMenu('tentang')" class="text-white nav-it flex flex-col items-center opacity-60"><i data-lucide="cpu"></i><span class="text-[7px] font-black mt-1">MAKER</span></button>
         </nav>
     </div>
 
     <script>
         const API_URL = "https://script.google.com/macros/s/AKfycbzplVy3RA0zTDjRYfrpKKcn4xjmEpqjHMKeNdaicZsRNkBhrJMrHLDK5X2igtvAIfWRNg/exec";
-        let currentUser = null, stream = null, currentTipe = "";
+        let currentUser = null, stream = null, cTipe = "", sch = null;
 
         setInterval(() => {
             const n = new Date(); 
             document.getElementById('clock').innerText = n.toLocaleTimeString('id-ID');
-            document.getElementById('date').innerText = n.toLocaleDateString('id-ID', {weekday:'long', day:'numeric', month:'short', year:'numeric'});
+            document.getElementById('date').innerText = n.toLocaleDateString('id-ID', {weekday:'long', day:'numeric', month:'long', year:'numeric'});
         }, 1000);
 
         async function handleLogin() {
-            const u = document.getElementById('username').value.trim(), p = document.getElementById('password').value.trim();
-            const res = await fetch(`${API_URL}?action=login&username=${u}&password=${p}`).then(r => r.json());
-            if(res.status === 'success') {
-                currentUser = res.user; document.getElementById('login-page').classList.add('hidden');
-                document.getElementById('main-app').classList.remove('hidden'); setupApp();
-            } else alert(res.message);
+            const u = document.getElementById('username').value.trim(), p = document.getElementById('password').value.trim(), b = document.getElementById('btn-login');
+            if(!u || !p) return alert("MAAF, ID & SANDI WAJIB!");
+            b.innerText = "AUTHENTICATING..."; b.disabled = true;
+            try {
+                const res = await fetch(`${API_URL}?action=login&username=${u}&password=${p}`).then(r => r.json());
+                if(res.status === 'success') {
+                    currentUser = res.user; document.getElementById('login-page').classList.add('hidden');
+                    document.getElementById('main-app').classList.remove('hidden'); setupApp();
+                } else alert("DITOLAK: " + res.message);
+            } catch(e) { alert("FAIL CONNECTION"); } finally { b.innerText = "MASUK APLIKASI"; b.disabled = false; }
         }
 
-        function setupApp() {
+        async function setupApp() {
             lucide.createIcons();
-            document.getElementById('p-full-name').innerText = currentUser.nama;
-            document.getElementById('p-role-txt').innerText = currentUser.role;
-            document.getElementById('pp-regu').innerText = currentUser.regu || "-";
-            document.getElementById('pp-kelas').innerText = currentUser.kelas || "-";
+            document.getElementById('u-name').innerText = currentUser.nama.split(' ')[0];
+            document.getElementById('u-role').innerText = currentUser.role;
+            document.getElementById('p-full').innerText = currentUser.nama;
+            document.getElementById('pp-r').innerText = currentUser.regu || "---";
+            document.getElementById('pp-k').innerText = currentUser.kelas || "---";
+            document.getElementById('pp-n').innerText = currentUser.nta || "---";
+            if(currentUser.foto && currentUser.foto !== "-") document.getElementById('p-f').src = currentUser.foto;
             
-            if(['Admin','Pembina','Dewan'].includes(currentUser.role)){ 
-                document.getElementById('tipe-dewan').classList.remove('hidden'); 
-                document.getElementById('petugas-box').classList.remove('hidden'); 
-                document.getElementById('i-petugas').value = currentUser.nama;
-            }
-            renderS(currentUser.bintang); loadS();
+            const isM = ['Admin','Pembina','Dewan Penggalang'].includes(currentUser.role);
+            if(isM){ document.getElementById('view-mgr').classList.remove('hidden'); document.getElementById('t-dewan').classList.remove('hidden'); document.getElementById('pet-box').classList.remove('hidden'); document.getElementById('i-p').value = currentUser.nama; document.getElementById('add-k').classList.remove('hidden'); }
+            else { document.getElementById('view-usr').classList.remove('hidden'); }
+            if(['Admin','Pembina'].includes(currentUser.role)) document.getElementById('nav-p').classList.add('hidden');
+            
+            renderStars(currentUser.bintang); loadStats(); loadK();
+            fetch(`${API_URL}?action=getSettings`).then(r => r.json()).then(s => { sch = s; document.getElementById('current-loc').innerText = s.sekolah; });
         }
 
-        function renderS(c) {
+        function renderStars(c) {
             ['stars-top', 'p-stars-ui'].forEach(id => {
-                const con = document.getElementById(id); con.innerHTML = "";
+                const con = document.getElementById(id); if(!con) return; con.innerHTML = "";
                 for(let i=1;i<=5;i++) con.innerHTML += `<i data-lucide="star" class="w-4 h-4 ${i <= c ? 'star-on' : 'star-off'}"></i>`;
             });
             lucide.createIcons();
         }
 
-        async function loadS() {
+        async function loadStats() {
             const r = await fetch(`${API_URL}?action=getDashboardData&user_id=${currentUser.user_id}`).then(r => r.json());
-            document.getElementById('g-persen').innerText = r.globalPersen + "%";
+            if(document.getElementById('view-mgr').classList.contains('hidden') === false) {
+                document.getElementById('g-persen').innerText = r.persen + "%";
+                document.getElementById('s-h').innerText = r.hadir;
+                document.getElementById('s-t').innerText = r.total;
+            }
+            if(!document.getElementById('view-usr').classList.contains('hidden')) {
+                document.getElementById('p-p').innerText = currentUser.persen + "%";
+                new Chart(document.getElementById('p-chart'), { type:'doughnut', data:{datasets:[{data:[currentUser.hadirCount, currentUser.totalHari-currentUser.hadirCount], backgroundColor:['#3D2B1F', '#FDF8F5'], borderWidth:0}]}, options:{cutout:'85%'} });
+            }
         }
 
         function showMenu(m) {
-            document.querySelectorAll('.content-section').forEach(s => s.classList.add('hidden'));
-            document.getElementById('menu-' + m).classList.remove('hidden'); stopCam();
+            document.querySelectorAll('.section-ani').forEach(s => s.classList.add('hidden'));
+            document.getElementById('menu-' + m).classList.remove('hidden');
+            if(stream) { stream.getTracks().forEach(t => t.stop()); stream = null; }
+            lucide.createIcons();
         }
 
-        function openCam(t) {
-            currentTipe = t; document.getElementById('tipe-box').classList.add('hidden'); document.getElementById('cam-box').classList.remove('hidden');
-            navigator.mediaDevices.getUserMedia({video:{facingMode:"user"}}).then(s => { stream = s; document.getElementById('video').srcObject = s; });
+        function openC(t) {
+            cTipe = t; document.getElementById('t-box').classList.add('hidden'); document.getElementById('cam-box').classList.remove('hidden');
+            document.getElementById('c-tipe').innerText = t;
+            navigator.mediaDevices.getUserMedia({video:{facingMode:"user"}}).then(s => { stream = s; document.getElementById('vid').srcObject = s; });
         }
-        function stopCam() { if(stream) stream.getTracks().forEach(t => t.stop()); }
 
-        async function sendAbsen() {
-            const p = document.getElementById('i-petugas').value, v = document.getElementById('video'), c = document.createElement('canvas');
-            c.width = v.videoWidth; c.height = v.videoHeight; c.getContext('2d').drawImage(v, 0, 0);
+        async function sendA() {
+            const btn = document.getElementById('btn-final'), i = document.getElementById('i-p').value, v = document.getElementById('vid');
+            btn.disabled = true; btn.innerText = "SINKRONISASI DATA...";
+            const can = document.createElement('canvas'); can.width = v.videoWidth; can.height = v.videoHeight;
+            can.getContext('2d').drawImage(v, 0, 0);
             navigator.geolocation.getCurrentPosition(async (pos) => {
                 const res = await fetch(API_URL, {method: 'POST', body: JSON.stringify({
-                    action: 'submitAbsensi', user_id: currentUser.user_id, nama: currentUser.nama, status: 'Hadir', tipe: currentTipe, petugas: p, lat: pos.coords.latitude, long: pos.coords.longitude, foto: c.toDataURL('image/jpeg', 0.5), kelas: currentUser.kelas
+                    action: 'submitAbsensi', user_id: currentUser.user_id, nama: currentUser.nama, status: 'Hadir', tipe: cTipe, petugas: i, lat: pos.coords.latitude, long: pos.coords.longitude, foto: can.toDataURL('image/jpeg', 0.4), kelas: currentUser.kelas
                 })}).then(r => r.json());
-                alert(res.message); location.reload();
+                alert("✅ SINKRONISASI SUKSES!"); location.reload();
             });
         }
 
-        function openModal() { document.getElementById('e-regu').value = currentUser.regu || ""; document.getElementById('modal-edit').classList.replace('hidden', 'flex'); }
+        function openModal() { document.getElementById('e-regu').value = currentUser.regu; document.getElementById('e-alamat').value = currentUser.alamat; document.getElementById('e-ortu').value = currentUser.ortu; document.getElementById('modal-edit').classList.replace('hidden', 'flex'); }
         function closeModal() { document.getElementById('modal-edit').classList.replace('flex', 'hidden'); }
         async function saveEdit() {
+            document.getElementById('btn-save').innerText = "...";
             await fetch(API_URL, {method: 'POST', body: JSON.stringify({
                 action: 'updateProfile', row: currentUser.row, newPass: document.getElementById('e-pass').value || null, regu: document.getElementById('e-regu').value, alamat: document.getElementById('e-alamat').value, ortu: document.getElementById('e-ortu').value, ortu_job: document.getElementById('e-kerja').value
-            })});
-            alert("Berhasil!"); location.reload();
+            })}); location.reload();
         }
+
+        async function upFoto(el) {
+            if(!el.files[0]) return;
+            alert("MAJESTY CLOUD: Memulai Pengunggahan...");
+            const reader = new FileReader();
+            reader.readAsDataURL(el.files[0]);
+            reader.onload = async (e) => {
+                const b = e.target.result;
+                const r = await fetch(API_URL, { method:'POST', body: JSON.stringify({ action:'updatePhoto', row:currentUser.row, user_id:currentUser.user_id, foto: b })}).then(r => r.json());
+                if(r.status === 'success') { document.getElementById('p-f').src = r.url; alert("Berhasil Terunggah!"); }
+            };
+        }
+
+        function openModalKeg() { document.getElementById('modal-keg').classList.replace('hidden', 'flex'); }
+        function closeModalKeg() { document.getElementById('modal-keg').classList.replace('flex', 'hidden'); }
+        async function saveKeg() {
+            await fetch(API_URL, {method: 'POST', body: JSON.stringify({ action: 'addKegiatan', j: document.getElementById('k-judul').value, t: document.getElementById('k-tgl').value, k: "Umum", desc: document.getElementById('k-desc').value })}); location.reload();
+        }
+        async function loadK() {
+            const data = await fetch(`${API_URL}?action=getKegiatan`).then(r => r.json());
+            const c = document.getElementById('list-keg'); c.innerHTML = "";
+            const iM = ['Admin','Pembina','Dewan Penggalang'].includes(currentUser.role);
+            data.forEach(i => {
+                c.innerHTML += `<div class="majesty-card p-6 relative section-ani overflow-hidden border-l-[10px]">
+                    ${iM ? `<button onclick="delK('${i.id}')" class="absolute top-4 right-4 text-rose-300 active:text-rose-600 transition-all"><i data-lucide="trash-2" class="w-4 h-4"></i></button>` : ''}
+                    <p class="text-[8px] font-black text-amber-600 uppercase mb-2 tracking-[0.2em]">${i.k}</p>
+                    <h3 class="font-black text-slate-800 leading-tight">${i.j}</h3><p class="text-[9px] text-slate-400 font-black italic mt-1">${i.t}</p>
+                    <p class="text-[10px] text-slate-500 font-medium italic mt-3 leading-relaxed opacity-70">${i.d}</p>
+                </div>`;
+            });
+            lucide.createIcons();
+        }
+        async function delK(id) { if(confirm("Musnahkan agenda ini?")) { await fetch(API_URL, {method: 'POST', body: JSON.stringify({ action: 'deleteKegiatan', id: id })}); loadK(); } }
     </script>
 </body>
 </html>
