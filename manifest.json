@@ -1,12 +1,12 @@
 {
-  "name": "Siap Wanamska Majesty",
+  "name": "SIAP WANAMSKA Majesty",
   "short_name": "Wanamska",
-  "description": "Sistem Informasi Absensi Penggalang Majesty Edition 2026",
+  "description": "Executive Digital Information Scout SMPN 26 Surakarta",
   "start_url": "index.html",
   "display": "standalone",
   "orientation": "portrait",
-  "background_color": "#3D2B1F",
-  "theme_color": "#3D2B1F",
+  "background_color": "#FDF8F4",
+  "theme_color": "#6F4E37",
   "icons": [
     {
       "src": "logo.png",
