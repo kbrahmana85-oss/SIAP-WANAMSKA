@@ -19,6 +19,10 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#6F4E37">
+<!-- Logo untuk iOS (iPhone) -->
+<link rel="apple-touch-icon" href="https://i.ibb.co/vz6W7rX/logo-pramuka.png">
 </head>
 <body>
 
@@ -504,6 +508,12 @@ function startQRScanner() {
             // Kirim data scan ke spreadsheet...
         }
     );
+}
+// Registrasi Service Worker untuk PWA
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('https://cdn.jsdelivr.net/npm/pwacompat@2.0.17/pwacompat.min.js', { scope: './' });
+  });
 }
     </script>
 </body>
