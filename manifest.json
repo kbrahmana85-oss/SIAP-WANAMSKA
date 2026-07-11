@@ -1,7 +1,7 @@
 {
-  "name": "SIAP WANAMSKA Majesty",
-  "short_name": "Wanamska",
-  "description": "Executive Digital Information Scout SMPN 26 Surakarta",
+  "name": "SIAP WANAMSKA",
+  "short_name": "WANAMSKA",
+  "description": "Sistem Informasi Absensi Penggalang Majesty Edition oleh SMPN 26 Surakarta.",
   "start_url": "index.html",
   "display": "standalone",
   "orientation": "portrait",
