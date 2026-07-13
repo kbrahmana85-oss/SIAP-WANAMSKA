@@ -25,22 +25,34 @@
 </head>
 <body>
 
-    <!-- MODAL AUTHOR (TUNAS KELAPA) -->
-    <div id="m-author" class="fixed inset-0 bg-black/80 z-[500] hidden items-center justify-center p-6 backdrop-blur-md">
-        <div class="bg-white w-full max-w-md rounded-[50px] p-10 shadow-2xl ani-up border-t-[12px] border-amber-600 text-center">
-             <div class="mb-6 w-20 h-20 bg-amber-50 rounded-full mx-auto flex items-center justify-center border shadow-inner">
-                <svg viewBox="0 0 100 100" class="w-12 h-12 fill-[#6F4E37]"><path d="M50 5 C35 5, 25 25, 35 45 C35 60, 45 65, 50 95 C55 65, 65 60, 65 45 C75 25, 65 5, 50 5 M45 45 C35 40, 40 30, 50 30 C60 30, 65 40, 55 45 C55 50, 45 50, 45 45 Z"/></svg>
-             </div>
-             <h2 class="font-black text-2xl uppercase italic leading-none mb-1">SIAP WANAMSKA</h2>
-             <div class="card-majesty p-8 text-left border-slate-800 space-y-6 mt-8 shadow-inner">
-                <div><p class="text-[8px] font-black text-slate-300 uppercase mb-1">Developer & Founder</p><h4 class="font-black text-slate-800 text-lg">Arif Nuur Iswahyudi, S. Pd</h4></div>
-                <div class="pt-4 border-t border-slate-100 space-y-2 text-slate-400 text-[10px] font-bold italic leading-tight">
-                    <p>Pembina Putra / Guru Matematika</p><p class="text-[#6F4E37] uppercase not-italic font-black text-[11px]">SMP Negeri 26 Kota Surakarta</p>
-                </div>
-             </div>
-             <button onclick="closeModal('m-author')" class="mt-8 w-full btn-majesty py-4 uppercase text-xs tracking-widest shadow-xl">Selesai</button>
-        </div>
+    <!-- MODAL: IDENTITAS DEVELOPER (TUNAS KELAPA TRIGGER) -->
+<div id="modal-author" class="fixed inset-0 bg-black/80 z-[600] hidden items-center justify-center p-6 backdrop-blur-md">
+    <div class="bg-white w-full max-w-md rounded-[50px] p-10 shadow-2xl ani-up border-t-[12px] border-[#6F4E37] text-center relative">
+         <!-- Ikon Tunas Kelapa di dalam Modal -->
+         <div class="mb-6 w-24 h-24 bg-amber-50 rounded-full mx-auto flex items-center justify-center border-4 border-amber-200 shadow-inner">
+            <svg viewBox="0 0 100 100" class="w-14 h-14 fill-[#6F4E37]">
+                <path d="M50 5 C35 5, 25 25, 35 45 C35 60, 45 65, 50 95 C55 65, 65 60, 65 45 C75 25, 65 5, 50 5 M45 45 C35 40, 40 30, 50 30 C60 30, 65 40, 55 45 C55 50, 45 50, 45 45 Z"/>
+            </svg>
+         </div>
+         
+         <h2 class="font-black text-2xl uppercase italic leading-none mb-1 text-slate-800">SIAP WANAMSKA</h2>
+         <p class="text-[9px] font-bold opacity-30 tracking-[0.3em] mb-8 uppercase italic">Sistem Absensi Penggalang</p>
+
+         <div class="card-majesty p-8 text-left border-slate-800 space-y-6 shadow-inner bg-slate-50/50">
+            <div>
+                <p class="text-[8px] font-black text-slate-300 uppercase mb-1">Founder & Lead Developer</p>
+                <h4 class="font-black text-slate-800 text-lg leading-tight">Arif Nuur Iswahyudi, S. Pd</h4>
+            </div>
+            <div class="pt-4 border-t border-slate-200 space-y-2 text-slate-400 text-[10px] font-bold italic leading-tight">
+                <p>Pembina Pramuka Putra</p>
+                <p>Guru Matematika</p>
+                <p class="text-[#6F4E37] uppercase not-italic font-black text-[11px] mt-1">SMP NEGERI 26 KOTA SURAKARTA</p>
+            </div>
+         </div>
+         
+         <button onclick="closeModal('modal-author')" class="mt-8 w-full btn-majesty py-4 uppercase text-xs tracking-widest shadow-xl font-black">Tutup Informasi</button>
     </div>
+</div>
 
     <!-- MODAL READ KEGIATAN -->
     <div id="m-read-keg" class="fixed inset-0 bg-black/80 z-[300] hidden items-center justify-center p-6 backdrop-blur-md">
@@ -262,7 +274,12 @@
         <nav class="bottom-nav fixed bottom-0 left-0 right-0 h-28 flex justify-around items-center z-[200] px-8 shadow-2xl border-white/5 border-t-[8px]">
             <button onclick="showS('home')" class="nav-it opacity-50 text-white flex flex-col items-center"><i data-lucide="grid-2x2"></i><span class="text-[8px] font-black mt-1 uppercase">DASHBOARD</span></button>
             <button onclick="showS('kegiatan')" class="nav-it opacity-50 text-white flex flex-col items-center"><i data-lucide="book-open"></i><span class="text-[8px] font-black mt-1 uppercase">KEGIATAN</span></button>
-            <button onclick="openModal('modal-author')" class="-mt-16 bg-white p-5 rounded-full border-[10px] border-[#FDF8F4] active:scale-90 shadow-2xl transition-all shadow-amber-950/20"><svg viewBox="0 0 100 100" class="w-12 h-12 fill-[#6F4E37]"><path d="M50 5 C35 5, 25 25, 35 45 C35 60, 45 65, 50 95 C55 65, 65 60, 65 45 C75 25, 65 5, 50 5 M45 45 C35 40, 40 30, 50 30 C60 30, 65 40, 55 45 C55 50, 45 50, 45 45 Z"/></svg></button>
+            <!-- NAVIGASI TENGAH: TUNAS KELAPA -->
+<button onclick="openModal('modal-author')" class="-mt-16 bg-white p-5 rounded-full border-[10px] border-[#FDF8F4] active:scale-90 shadow-2xl transition-all shadow-amber-950/20">
+     <svg viewBox="0 0 100 100" class="w-12 h-12 fill-[#6F4E37]">
+        <path d="M50 5 C35 5, 25 25, 35 45 C35 60, 45 65, 50 95 C55 65, 65 60, 65 45 C75 25, 65 5, 50 5 M45 45 C35 40, 40 30, 50 30 C60 30, 65 40, 55 45 C55 50, 45 50, 45 45 Z"/>
+     </svg>
+</button>
             <button onclick="showS('absensi')" class="nav-it opacity-50 text-white flex flex-col items-center"><i data-lucide="fingerprint"></i><span class="text-[8px] font-black mt-1 uppercase">ABSEN</span></button>
             <button id="nav-p" onclick="showS('profil')" class="nav-it opacity-50 text-white flex flex-col items-center"><i data-lucide="user-round"></i><span class="text-[8px] font-black mt-1 uppercase leading-none text-center">Profil</span></button>
             <button id="nav-inv" onclick="showS('inventaris')" class="hidden nav-it opacity-50 text-white flex flex-col items-center"><i data-lucide="archive"></i><span class="text-[8px] font-black mt-1 uppercase leading-none text-center text-amber-100 italic">Inventaris</span></button>
@@ -341,8 +358,15 @@
         }
 
         function showS(m) { history.pushState(null,null,null); document.querySelectorAll('main section').forEach(s => s.classList.add('hidden')); document.getElementById('menu-' + m).classList.remove('hidden'); document.querySelectorAll('.nav-it').forEach(n => n.classList.replace('opacity-100','opacity-50')); const nB = document.querySelector(`.nav-it[onclick*="${m}"]`); if(nB) nB.classList.replace('opacity-50','opacity-100'); backToChoice(); lucide.createIcons(); }
-        function openModal(id) { history.pushState(null,null,null); document.getElementById(id).classList.replace('hidden','flex'); }
-        function closeModal(id) { document.getElementById(id).classList.replace('flex','hidden'); }
+       function openModal(id) { 
+    history.pushState(null, null, null); // Support tombol Back HP
+    document.getElementById(id).classList.replace('hidden', 'flex'); 
+    lucide.createIcons(); // Agar icon di dalam modal muncul
+}
+
+function closeModal(id) { 
+    document.getElementById(id).classList.replace('flex', 'hidden'); 
+}
 
         // CAM & SCAN ENGINE 
         function backToChoice() { stopCam(); if(qrScan) qrScan.stop(); document.getElementById('selector-box').classList.remove('hidden'); document.getElementById('process-area').classList.add('hidden'); document.getElementById('qr-res-box').classList.add('hidden'); }
@@ -388,5 +412,6 @@
         async function delK(id) { if(confirm("Hapus?")) { await fetch(API_URL, {method: 'POST', body: JSON.stringify({ action: 'deleteKegiatan', id: id })}); loadGiat(); } }
         async function getFullData() { const res = await fetch(`${API_URL}?action=getAllAbsensi`).then(r => r.json()); return res.data; }
     </script>
+    
 </body>
 </html>
