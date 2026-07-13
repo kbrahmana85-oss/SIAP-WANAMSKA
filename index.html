@@ -1,82 +1,357 @@
-/** 
- * SIAP WANAMSKA - SISTEM ABSENSI PENGGALANG WANAMSKA
- * VERSION: MASTER BUILD v6.0 (FINAL SINKRONISASI)
- * Developer: Arif Nuur Iswahyudi, S. Pd
- */
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>SIAP WANAMSKA</title>
+    <script src="https://cdn.tailwindcss.com"></script><script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
+    <script src="https://unpkg.com/html5-qrcode"></script>
+    <style>
+        :root { --p-brown: #6F4E37; --p-cream: #FDF8F4; --p-gold: #F59E0B; --p-red: #B91C1C; }
+        body { background-color: var(--p-cream); padding-bottom: 130px; font-family: 'Segoe UI', Tahoma, sans-serif; overflow-x: hidden; -webkit-tap-highlight-color: transparent; }
+        .majesty-header { background: var(--p-brown); border-bottom: 5px solid var(--p-gold); }
+        .bottom-nav { background: var(--p-brown); border-top: 4px solid var(--p-gold); }
+        .card-majesty { background: white; border-radius: 35px; border-left: 12px solid var(--p-brown); box-shadow: 0 4px 25px rgba(0,0,0,0.04); }
+        .btn-majesty { background: var(--p-brown); color: white; border-radius: 20px; font-weight: 800; transition: 0.2s; box-shadow: 0 8px 15px rgba(111,78,55,0.2); }
+        .btn-majesty:active { transform: scale(0.95); }
+        .ani-up { animation: fadeInUp 0.4s ease-out; } @keyframes fadeInUp { from { opacity:0; transform:translateY(20px); } to { opacity:1; transform:translateY(0); } }
+        .login-bg { background-color: #6F4E37; background-image: radial-gradient(var(--p-gold) 1.5px, transparent 1px); background-size: 35px 35px; }
+        #reader { width: 100% !important; border-radius: 30px !important; overflow: hidden !important; border: none !important; }
+    </style>
+</head>
+<body>
 
-const SPREADSHEET_ID = "1psmyiXl6OvIpKmPnuUvtNeEoNvMt6GukJv_S2yLk4Hs";
-const FOLDER_FOTO_ID = "1Dc399KOxltIa8osp0blPv_GX0ap--ekq";
+    <!-- OVERLAYS: MODAL AUTHOR (TUNAS KELAPA) -->
+    <div id="modal-author" class="fixed inset-0 bg-black/80 z-[500] hidden items-center justify-center p-6 backdrop-blur-md">
+        <div class="bg-white w-full max-w-md rounded-[50px] p-10 shadow-2xl ani-up border-t-[12px] border-amber-600 text-center">
+             <div class="mb-6 w-20 h-20 bg-amber-50 rounded-full mx-auto flex items-center justify-center">
+                <svg viewBox="0 0 100 100" class="w-12 h-12 fill-amber-800">
+                    <path d="M50 5 C35 5, 25 25, 35 45 C35 60, 45 65, 50 95 C55 65, 65 60, 65 45 C75 25, 65 5, 50 5 M45 45 C35 40, 40 30, 50 30 C60 30, 65 40, 55 45 C55 50, 45 50, 45 45 Z"/>
+                </svg>
+             </div>
+             <h2 class="font-black text-2xl uppercase italic leading-none mb-1">SIAP WANAMSKA</h2>
+             <p class="text-[9px] font-black opacity-30 tracking-[0.3em] mb-10 uppercase italic">Digital Administration Solution</p>
+             <div class="card-majesty p-8 text-left border-slate-800 space-y-6">
+                <div><p class="text-[8px] font-black text-slate-300 uppercase mb-1">Project Leader & Developer</p><h4 class="font-black text-slate-800 text-lg">Arif Nuur Iswahyudi, S. Pd</h4></div>
+                <div class="pt-4 border-t space-y-2 text-slate-400 text-[10px] font-bold italic leading-tight">
+                    <p>Pembina Putra / Guru Matematika</p>
+                    <p class="text-[#6F4E37] uppercase not-italic font-black text-[11px]">SMP Negeri 26 Kota Surakarta</p>
+                </div>
+             </div>
+             <button onclick="closeModal('modal-author')" class="mt-8 w-full btn-majesty py-4 uppercase text-xs tracking-widest shadow-xl">Kembali</button>
+        </div>
+    </div>
 
-function getSS() { return SpreadsheetApp.openById(SPREADSHEET_ID); }
+    <!-- MODAL READ AGENDA -->
+    <div id="m-read-keg" class="fixed inset-0 bg-black/80 z-[300] hidden items-center justify-center p-6 backdrop-blur-md">
+        <div class="bg-white w-full max-w-md rounded-[45px] p-8 shadow-2xl ani-up border-l-[15px] border-amber-800">
+            <h2 id="rk-judul" class="text-xl font-black text-slate-800 leading-tight mb-2 uppercase"></h2>
+            <p id="rk-kat" class="text-[9px] font-black text-amber-600 bg-amber-50 inline-block px-3 py-1 rounded-full uppercase tracking-widest mb-4"></p>
+            <div id="rk-desc" class="text-sm font-medium text-slate-600 leading-relaxed max-h-[40vh] overflow-y-auto mb-8 pr-2"></div>
+            <div class="flex gap-2">
+                <button onclick="dlKegPDF()" class="bg-red-700 text-white p-4 rounded-2xl shadow-lg active:scale-90"><i data-lucide="file-text"></i></button>
+                <button onclick="closeModal('m-read-keg')" class="flex-1 btn-majesty py-4 uppercase shadow-xl font-black">Selesai</button>
+            </div>
+        </div>
+    </div>
 
-function doGet(e) {
-  const action = e.parameter.action;
-  const ss = getSS();
-  if (action === 'login') return loginUser(ss, e.parameter.username, e.parameter.password);
-  if (action === 'getDashboardData') return getDashboardData(ss);
-  if (action === 'getKegiatan') return getKegiatan(ss);
-  if (action === 'getSettings') return getSettings(ss);
-  if (action === 'getAllAbsensi') return getAllAbsensi(ss);
-  if (action === 'getUserByQR') return getUserByQR(ss, e.parameter.id);
-  if (action === 'getInventaris') return getInventaris(ss);
-  return res({status:"ready"});
-}
+    <!-- LOGIN PAGE -->
+    <div id="login-page" class="min-h-screen flex items-center justify-center p-6 login-bg">
+        <div class="bg-white p-10 rounded-[60px] shadow-2xl w-full max-w-md text-center z-10 border-t-[12px] border-[#F59E0B]">
+            <img src="logo.png" class="w-24 mx-auto mb-6 drop-shadow-xl" onerror="this.src='https://i.ibb.co/vz6W7rX/logo-pramuka.png'">
+            <h1 class="text-2xl font-black text-slate-800 uppercase tracking-tighter mb-2">SIAP WANAMSKA</h1>
+            <p class="text-[8px] font-black uppercase text-amber-600 bg-amber-50 px-4 py-2 rounded-full inline-block mb-10 tracking-[0.2em] leading-none">Pramuka SMP Negeri 26 Surakarta</p>
+            <div class="space-y-4">
+                <input type="text" id="username" placeholder="USER ID" class="w-full p-4 border-2 border-slate-50 bg-slate-50 focus:border-amber-800 rounded-2xl outline-none font-bold uppercase shadow-inner">
+                <div class="relative">
+                    <input type="password" id="password" placeholder="SANDI" class="w-full p-4 pr-14 border-2 border-slate-50 bg-slate-50 focus:border-amber-800 rounded-2xl outline-none font-bold shadow-inner">
+                    <button onclick="togglePass()" class="absolute right-4 top-4 text-slate-300 active:text-amber-800 transition-colors"><i data-lucide="eye" id="eye-icon"></i></button>
+                </div>
+                <button onclick="handleLogin()" id="btn-login" class="w-full btn-majesty py-5 mt-4 text-sm tracking-widest uppercase">Otentikasi Akun</button>
+            </div>
+        </div>
+    </div>
 
-function doPost(e) {
-  const ss = getSS();
-  const d = JSON.parse(e.postData.contents);
-  if (d.action === 'submitAbsensi') return simpanAbsensi(ss, d);
-  if (d.action === 'updateProfile') return updateProfile(ss, d);
-  if (d.action === 'updatePhoto') return updatePhoto(ss, d);
-  if (d.action === 'addKegiatan') return addKegiatan(ss, d);
-  if (d.action === 'deleteKegiatan') return deleteKegiatan(ss, d.id);
-  if (d.action === 'addInventaris') return addInventaris(ss, d);
-  if (d.action === 'deleteInventaris') return deleteInventaris(ss, d.id);
-}
+    <!-- APP WRAPPER -->
+    <div id="main-app" class="hidden">
+        <header class="majesty-header text-white p-6 sticky top-0 z-[100] rounded-b-[45px] shadow-2xl border-b-0">
+            <div class="flex justify-between items-start">
+                <div class="flex items-center gap-3">
+                    <img src="logo.png" class="w-10 h-10 brightness-200" onerror="this.src='https://i.ibb.co/vz6W7rX/logo-pramuka.png'">
+                    <div><h1 class="font-black text-sm tracking-tighter uppercase leading-none">Wanamska</h1><p class="text-[7px] font-bold opacity-40 uppercase mt-1 tracking-widest italic">Digital Identity</p></div>
+                </div>
+                <div class="text-right">
+                     <p id="h-tgl" class="text-[9px] font-black text-amber-300 mb-1"></p>
+                     <p id="h-jam" class="text-xl font-black tabular-nums"></p>
+                </div>
+            </div>
+            <div class="mt-5 p-3 bg-white/10 rounded-2xl backdrop-blur-md flex justify-between items-center border border-white/5 shadow-inner">
+                <div class="text-left text-[9px] font-black uppercase text-amber-300 leading-none">
+                    <p class="opacity-50 text-[6px] text-white">SESI PENGGUNA :</p>
+                    <p><span id="header-role"></span> / <span id="header-name" class="text-white"></span></p>
+                </div>
+                <button onclick="location.reload()" class="bg-red-800 p-2.5 rounded-xl majesty-btn !shadow-none"><i data-lucide="log-out" class="w-3 h-3 text-white"></i></button>
+            </div>
+        </header>
 
-// FITUR INVENTARIS
-function getInventaris(ss) { const d = ss.getSheetByName('inventaris').getDataRange().getValues(); let r = []; for(let i=1;i<d.length;i++) if(d[i][1]) r.push({id:d[i][0], n:d[i][1], q:d[i][2], k:d[i][3], l:d[i][4], p:d[i][5], ket:d[i][6]}); return res(r); }
-function addInventaris(ss, d) { ss.getSheetByName('inventaris').appendRow(["INV"+Date.now(), d.n, d.q, d.k, d.l, d.p, d.ket]); return res({status:'success'}); }
-function deleteInventaris(ss, id) { const s = ss.getSheetByName('inventaris'); const d = s.getDataRange().getValues(); for(let i=1;i<d.length;i++) if(d[i][0].toString()===id.toString()){ s.deleteRow(i+1); return res({status:'success'}); } }
+        <main class="p-6 max-w-md mx-auto space-y-7">
+            <!-- DASHBOARD -->
+            <section id="menu-home" class="ani-up space-y-6">
+                <!-- WIDGET KALENDER REALTIME (New v6.0) -->
+                <div class="bg-white rounded-[45px] shadow-2xl border border-slate-50 overflow-hidden text-center ani-up">
+                    <div class="majesty-header text-white p-8">
+                         <p id="w-jam" class="text-6xl font-black tracking-tighter leading-none mb-2"></p>
+                         <p id="w-hari" class="text-[9px] font-black tracking-[0.4em] uppercase opacity-40"></p>
+                    </div>
+                    <div class="p-6 flex justify-around border-t border-slate-50">
+                         <div class="flex-1"><p id="w-tgl" class="text-3xl font-black text-[#6F4E37]"></p><p class="text-[8px] font-black text-slate-300 uppercase tracking-widest">TGL</p></div>
+                         <div class="flex-1 border-x border-slate-50"><p id="w-bln" class="text-3xl font-black text-[#6F4E37] uppercase"></p><p class="text-[8px] font-black text-slate-300 uppercase tracking-widest">BLN</p></div>
+                         <div class="flex-1"><p id="w-thn" class="text-3xl font-black text-[#6F4E37]"></p><p class="text-[8px] font-black text-slate-300 uppercase tracking-widest">THN</p></div>
+                    </div>
+                </div>
 
-function loginUser(ss, u, p) {
-  const sheet = ss.getSheetByName('users');
-  const data = sheet.getDataRange().getValues();
-  const uIn = u ? u.toString().trim().toLowerCase() : "";
-  const pIn = p ? p.toString().trim() : "";
-  for (let i = 1; i < data.length; i++) {
-    if (data[i][0].toString().trim().toLowerCase() === uIn && data[i][1].toString().trim() === pIn) {
-      const stats = calculateStats(ss, data[i][0].toString());
-      return res({ status: 'success', user: { row: i + 1, user_id: data[i][0], nama: data[i][2], role: data[i][3], regu: data[i][4], foto: data[i][5], qr: data[i][6], kelas: data[i][7], alamat: data[i][8], nta: data[i][9], ortu: data[i][10], ortu_job: data[i][11], bintang: stats.b, persen: stats.p, h: stats.h, t: stats.t, logs: stats.logs } });
-    }
-  }
-  return res({status: 'error', message: 'User ID atau Sandi Salah'});
-}
+                <div id="v-mgr" class="hidden card-majesty p-10 text-center border-l-0 border-b-[10px] border-amber-600">
+                    <p class="text-[9px] font-black text-slate-400 mb-2 uppercase italic leading-none tracking-widest">Mobilisasi Massa Hari Ini</p>
+                    <h3 id="global-persen" class="text-7xl font-black text-[#6F4E37] leading-none">0%</h3>
+                </div>
 
-function calculateStats(ss, id) {
-  const d = ss.getSheetByName('absensi').getDataRange().getValues(); const uH = new Set(); let c = 0; let lg = [];
-  for (let i = d.length-1; i >= 1; i--) { 
-    if(!d[i][0]) continue; const tFull = d[i][0].toString(); const tShort = tFull.split(' ')[0]; uH.add(tShort); 
-    if (d[i][1].toString() === id) { if(d[i][3] === 'Hadir') c++; if(lg.length < 5) lg.push({w: tFull, j: d[i][7], m: d[i][9]}); }
-  }
-  const total = uH.size || 1; const pr = Math.round((c / total) * 100);
-  return { h: c, t: total, p: pr, b: (pr >= 75 ? 5 : pr >= 50 ? 4 : pr >= 30 ? 3 : 1), logs: lg };
-}
+                <div id="v-usr" class="hidden space-y-7">
+                    <div class="card-majesty p-8 flex flex-col items-center border-l-0">
+                        <div class="w-36 h-36 mb-4"><canvas id="personal-chart"></canvas></div>
+                        <p id="p-persen-txt" class="font-black text-2xl text-amber-800 uppercase tracking-tighter"></p>
+                        <div id="stars-top" class="flex gap-1.5 mt-2"></div>
+                    </div>
+                    <!-- PERSONAL LOG LIST (New v6.0) -->
+                    <div class="bg-white rounded-[45px] p-8 shadow-sm border border-slate-50">
+                        <h4 class="text-[9px] font-black text-[#6F4E37] uppercase tracking-[0.2em] mb-6 flex gap-2"><i data-lucide="calendar-check" class="w-4 h-4"></i> Giat Terbaru Saya</h4>
+                        <div id="personal-logs" class="space-y-4"></div>
+                    </div>
+                </div>
+            </section>
 
-function simpanAbsensi(ss, d) {
-  const s = ss.getSheetByName('absensi'); const t = Utilities.formatDate(new Date(), "GMT+7", "dd/MM/yyyy HH:mm:ss");
-  const m = d.lat ? `https://www.google.com/maps?q=${d.lat},${d.long}` : "-";
-  s.appendRow([t, d.user_id, d.nama, d.status, d.tipe, d.petugas || '-', m, d.ket || "Terverifikasi", d.foto || "-", "GPS-PWA", d.kelas]);
-  return res({status: 'success', message: 'Kehadiran ' + d.tipe + ' Berhasil!'});
-}
+            <!-- AGENDA -->
+            <section id="menu-kegiatan" class="hidden ani-up">
+                <div class="flex justify-between items-center mb-8 px-2">
+                    <div><h2 class="text-2xl font-black text-slate-800 uppercase italic leading-none">Agenda Giat</h2><p class="text-[8px] font-bold opacity-30 mt-1 uppercase tracking-widest">Mading Pangkalan Digital</p></div>
+                    <button id="btn-add-keg" onclick="openModal('modal-keg')" class="hidden btn-majesty p-4 shadow-xl active:scale-75"><i data-lucide="plus"></i></button>
+                </div>
+                <div id="list-keg" class="space-y-5"></div>
+            </section>
 
-function getKegiatan(ss) { const d = ss.getSheetByName('kegiatan').getDataRange().getValues(); let r = []; for(let i=1; i<d.length; i++) if(d[i][1]) r.push({id:d[i][0], j:d[i][1], t:Utilities.formatDate(new Date(d[i][2]),"GMT+7","dd/MM/yy"), k:d[i][3], d:d[i][4], gal: d[i][5] ? d[i][5].split(",") : []}); return r; }
-function getDashboardData(ss) { const a = ss.getSheetByName('absensi').getDataRange().getValues(); const u = ss.getSheetByName('users').getDataRange().getValues(); const today = Utilities.formatDate(new Date(), "GMT+7", "dd/MM/yyyy"); let h = 0; let t = 0; for(let i=1; i<a.length; i++) if(a[i][0].toString().includes(today) && a[i][3] === 'Hadir') h++; for(let j=1; j<u.length; j++) if(u[j][3] === 'Penggalang' || u[j][3] === 'Dewan_Penggalang') t++; return res({ persen: t>0 ? Math.round((h/t)*100) : 0, h: h, t: t }); }
-function getUserByQR(ss, id) { const d = ss.getSheetByName('users').getDataRange().getValues(); for (let i = 1; i < d.length; i++) if (d[i][0].toString() === id.toString()) return res({status:'success', n: d[i][2], k: d[i][7]}); return res({status: 'error', message: 'ID Tidak Terdaftar'}); }
-function getSettings(ss) { const d = ss.getSheetByName('pengaturan').getDataRange().getValues(); for (let i = 1; i < d.length; i++) if (d[i][4].toString().toLowerCase() === "on") return res({nama:d[i][0], rad:d[i][3]}); return res({nama:d[1][0], rad:d[1][3]}); }
-function updateProfile(ss, d) { const s = ss.getSheetByName('users'); const r = parseInt(d.row); s.getRange(r, 5).setValue(d.regu); s.getRange(r, 9).setValue(d.alamat); s.getRange(r, 11).setValue(d.ortu); s.getRange(r, 12).setValue(d.ortu_job); s.getRange(r, 8).setValue(d.kelas); s.getRange(r, 10).setValue(d.nta); if (d.newPass) s.getRange(r, 2).setValue(d.newPass); return res({status: 'success', message: 'Updated'}); }
-function updatePhoto(ss, d) { const blob = Utilities.newBlob(Utilities.base64Decode(d.foto.split(',')[1]), "image/jpeg", "UP_" + d.user_id + ".jpg"); const file = DriveApp.getFolderById(FOLDER_FOTO_ID).createFile(blob); file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW); ss.getSheetByName('users').getRange(parseInt(d.row), 6).setValue(file.getUrl()); return res({status: 'success', url: file.getUrl()}); }
-function addKegiatan(ss, d) { ss.getSheetByName('kegiatan').appendRow(["ID"+Date.now(), d.judul, d.tgl, d.kategori, d.desc, (d.files || []).join(",")]); return res({status:'success'}); }
-function deleteKegiatan(ss, id) { const s = ss.getSheetByName('kegiatan'); const d = s.getDataRange().getValues(); for(let i=1;i<d.length;i++) if(d[i][0].toString()===id.toString()){ s.deleteRow(i+1); return res({status:'success'}); } }
-function getAllAbsensi(ss) { return res({status: 'success', data: ss.getSheetByName('absensi').getDataRange().getValues()}); }
-function res(obj) { return ContentService.createTextOutput(JSON.stringify(obj)).setMimeType(ContentService.MimeType.JSON); }
+            <!-- ABSENSI -->
+            <section id="menu-absensi" class="hidden ani-up">
+                <div id="selector-box" class="space-y-6 text-center">
+                    <h2 class="font-black italic text-lg uppercase text-slate-800 mb-10 leading-none tracking-tight">Presensi Kehadiran</h2>
+                    
+                    <button id="btn-scan-qr" onclick="openScanner()" class="hidden w-full bg-amber-600 text-white p-8 rounded-[45px] shadow-2xl flex justify-between items-center border-r-[15px] border-amber-800 active:scale-95 transition-transform">
+                        <div class="text-left font-black uppercase leading-tight"><p class="text-xl italic">SCAN QR IDENTITAS</p><p class="text-[8px] opacity-40 uppercase tracking-widest">Validasi Cepat Anggota</p></div><i data-lucide="qr-code"></i>
+                    </button>
+                    
+                    <button id="btn-t-dewan" onclick="openCam('Latihan Dewan')" class="hidden w-full bg-slate-900 text-white p-8 rounded-[45px] shadow-2xl flex justify-between items-center border-r-[15px] border-slate-700 active:scale-95 transition-transform">
+                        <div class="text-left font-black uppercase leading-tight"><p class="text-xl italic">LATIHAN DEWAN</p><p class="text-[8px] opacity-40 uppercase tracking-widest mt-1">Akses Penugasan Khusus</p></div><i data-lucide="award"></i>
+                    </button>
+                    
+                    <button onclick="openCam('Pramuka Wajib')" class="w-full btn-majesty !bg-red-800 p-8 rounded-[45px] shadow-2xl flex justify-between items-center border-r-[15px] border-red-700 active:scale-95 transition-transform">
+                        <div class="text-left font-black uppercase leading-tight"><p class="text-xl italic text-white">PRAMUKA WAJIB</p><p class="text-[8px] opacity-40 uppercase tracking-widest">Giat Latihan Umum</p></div><i data-lucide="flag"></i>
+                    </button>
+
+                    <div id="admin-reports" class="hidden grid grid-cols-2 gap-3 pt-8 mt-10 border-t-2 border-dashed border-amber-200">
+                        <button onclick="downloadXLS()" class="bg-emerald-600 text-white py-5 rounded-3xl font-black text-[9px] uppercase"><i data-lucide="file-spreadsheet" class="mx-auto mb-2"></i> Export Excel</button>
+                        <button onclick="downloadPDF()" class="bg-rose-700 text-white py-5 rounded-3xl font-black text-[9px] uppercase"><i data-lucide="file-text" class="mx-auto mb-2"></i> Print PDF</button>
+                    </div>
+                </div>
+
+                <div id="process-area" class="hidden text-center ani-up">
+                    <p id="proc-label" class="text-[10px] font-black uppercase text-amber-800 mb-6 bg-amber-100 px-5 py-2 rounded-full inline-block shadow-sm tracking-[0.2em]"></p>
+                    
+                    <div class="rounded-[55px] overflow-hidden bg-black border-[8px] border-white shadow-2xl relative aspect-square mx-auto mb-10 max-w-[300px]">
+                        <div id="reader"></div>
+                        <video id="video" class="w-full h-full object-cover" autoplay playsinline></video>
+                    </div>
+
+                    <!-- VALIDASI PETUGAS AFTER SCAN (v6.0 Fix) -->
+                    <div id="scan-res-box" class="hidden bg-white p-7 rounded-[40px] border-2 border-amber-500 mb-8 ani-up shadow-2xl">
+                         <p class="text-[9px] font-black text-slate-300 uppercase mb-2">Target Terdeteksi :</p>
+                         <h3 id="res-nama" class="font-black text-xl text-[#6F4E37] uppercase leading-tight">---</h3>
+                         <div class="mt-8 pt-5 border-t text-left">
+                              <label class="text-[9px] font-black text-amber-800 block mb-2 uppercase tracking-widest">TANDA TANGAN DIGITAL / PETUGAS</label>
+                              <input type="text" id="p-input" class="w-full p-4 bg-slate-50 border rounded-2xl outline-none font-black text-amber-950 uppercase shadow-inner text-sm border-amber-200">
+                         </div>
+                         <button onclick="saveScanAbsen()" class="w-full mt-8 bg-amber-950 text-white py-5 rounded-3xl font-black shadow-xl tracking-widest uppercase text-xs">VALIDASI HADIR SEKARANG</button>
+                    </div>
+
+                    <div id="selfie-btns" class="hidden px-2 flex gap-3">
+                       <button onclick="toggleCam()" class="bg-amber-600 text-white p-5 rounded-[28px] shadow-lg active:scale-75 transition-all"><i data-lucide="refresh-ccw" class="w-6 h-6"></i></button>
+                       <button onclick="sendAbsen()" id="btn-final-absen" class="flex-1 btn-majesty py-6 rounded-[35px] font-black uppercase tracking-[0.3em] text-xs shadow-2xl">LAKUKAN IDENTIFIKASI</button>
+                    </div>
+
+                    <button onclick="backToSelector()" class="mt-10 text-[10px] font-black text-slate-300 uppercase tracking-widest underline decoration-amber-500 decoration-2 underline-offset-[12px]">Batalkan Sesi Verifikasi</button>
+                </div>
+            </section>
+
+            <!-- INVENTARIS (NEW v6.0) -->
+            <section id="menu-inventaris" class="hidden ani-up">
+                <div class="flex justify-between items-center mb-8 px-2 uppercase font-black text-slate-800 leading-none">
+                    <div><h2 class="text-2xl italic leading-none">Inventory</h2><p class="text-[8px] font-bold opacity-30 mt-1 uppercase italic tracking-tighter">Stock Kontrol Gugus Depan</p></div>
+                    <button onclick="openModal('modal-inv')" class="btn-majesty p-4 shadow-xl active:scale-75"><i data-lucide="plus-circle"></i></button>
+                </div>
+                <div id="list-inv" class="grid grid-cols-1 gap-5"></div>
+            </section>
+
+            <!-- PROFIL -->
+            <section id="menu-profil" class="hidden ani-up text-center">
+                <div class="bg-white p-10 rounded-[70px] shadow-2xl relative overflow-hidden border">
+                    <div class="majesty-header absolute top-0 left-0 w-full h-44"></div>
+                    <div class="relative z-10">
+                        <div class="relative w-40 h-40 mx-auto mb-6">
+                            <img id="p-foto" src="https://i.ibb.co/MDv4Byw/default-user.png" class="w-full h-full rounded-full border-8 border-white shadow-2xl object-cover">
+                            <button onclick="document.getElementById('i-foto').click()" class="absolute bottom-1.5 right-1.5 bg-amber-800 text-white p-4 rounded-full border-4 border-white shadow-xl active:scale-75 transition-transform"><i data-lucide="camera" class="w-5 h-5"></i></button>
+                            <input type="file" id="i-foto" class="hidden" accept="image/*" onchange="uploadFoto(this)">
+                        </div>
+                        <h3 id="p-name" class="font-black text-2xl text-slate-800 uppercase leading-none tracking-tighter mb-2">---</h3>
+                        <p id="p-r-label" class="text-amber-600 text-[10px] font-black uppercase tracking-[0.4em] mb-10 italic"></p>
+                        <div id="p-stars-ui" class="flex justify-center gap-2 mb-10"></div>
+                        <div class="grid grid-cols-2 gap-4 text-left bg-slate-50 p-8 rounded-[45px] border shadow-inner">
+                            <div><p class="text-[9px] font-black text-slate-400">PASUKAN / REGU</p><p id="pp-r" class="font-bold text-sm text-slate-700 leading-tight">---</p></div>
+                            <div><p class="text-[9px] font-black text-slate-400">KELAS / TK</p><p id="pp-k" class="font-bold text-sm text-slate-700 leading-tight">---</p></div>
+                            <div class="col-span-2 border-t pt-5 border-slate-200"><p class="text-[9px] font-black text-slate-400">NOMOR TANDA ANGGOTA (NTA)</p><p id="pp-nta" class="font-bold text-sm text-slate-700 uppercase leading-none">---</p></div>
+                        </div>
+                        <div class="mt-10 p-5 border rounded-[35px] bg-white shadow-inner inline-block"><img id="p-qr" class="w-36 h-36 rounded-2xl"><p class="text-[8px] font-black text-slate-300 mt-4 uppercase tracking-[0.5em]">Identitas Digital Card</p></div>
+                        <div id="btn-edit-area" class="mt-10"><button onclick="openModal('modal-edit')" class="btn-majesty w-full py-5 text-[11px] uppercase tracking-widest shadow-xl">Sempurnakan Data Biodata</button></div>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <!-- NAVIGATION: CENTER TRIGGER (TUNAS KELAPA) -->
+        <nav class="bottom-nav fixed bottom-0 left-0 right-0 h-28 flex justify-around items-center z-[200] px-8 shadow-2xl border-white/5 border-t-[8px]">
+            <button onclick="showNav('home')" class="nav-it opacity-50 text-white flex flex-col items-center"><i data-lucide="grid-2x2"></i><span class="text-[8px] font-black mt-1">DASHBOARD</span></button>
+            <button onclick="showNav('kegiatan')" class="nav-it opacity-50 text-white flex flex-col items-center"><i data-lucide="book-open"></i><span class="text-[8px] font-black mt-1">EVENT</span></button>
+            <!-- TUNAS KELAPA CENTER TRIGGER -->
+            <button onclick="openModal('modal-dev')" class="-mt-16 bg-white p-5 rounded-full border-[10px] border-[#FDF8F4] active:scale-90 shadow-2xl transition-all shadow-amber-950/20">
+                 <svg viewBox="0 0 100 100" class="w-12 h-12 fill-[#6F4E37]">
+                    <path d="M50 5 C35 5, 25 25, 35 45 C35 60, 45 65, 50 95 C55 65, 65 60, 65 45 C75 25, 65 5, 50 5 M45 45 C35 40, 40 30, 50 30 C60 30, 65 40, 55 45 C55 50, 45 50, 45 45 Z"/>
+                 </svg>
+            </button>
+            <button onclick="showNav('absensi')" class="nav-it opacity-50 text-white flex flex-col items-center"><i data-lucide="fingerprint"></i><span class="text-[8px] font-black mt-1 uppercase">ABSEN</span></button>
+            <!-- DINAMIS PROFIL / INVENTARIS SESUAI ROLE (v6.0 Update) -->
+            <button id="nav-p" onclick="showNav('profil')" class="nav-it opacity-50 text-white flex flex-col items-center"><i data-lucide="user-round"></i><span class="text-[8px] font-black mt-1 uppercase">Profil</span></button>
+            <button id="nav-i" onclick="showNav('inventaris')" class="hidden nav-it opacity-50 text-white flex flex-col items-center"><i data-lucide="archive"></i><span class="text-[8px] font-black mt-1 uppercase">STOK</span></button>
+        </nav>
+    </div>
+
+    <!-- MODAL INVENTARIS FORM -->
+    <div id="modal-inv" class="fixed inset-0 bg-black/80 z-[300] hidden items-center justify-center p-6 backdrop-blur-md">
+        <div class="bg-white w-full max-w-md rounded-[45px] p-10 shadow-2xl ani-up border-t-8 border-amber-600">
+            <h2 class="font-black text-xl mb-6 italic">PENAMBAHAN ASET</h2>
+            <div class="space-y-4">
+                 <input type="text" id="i-n" placeholder="Nama Barang (Ex: Tenda)" class="w-full p-4 border rounded-2xl outline-none">
+                 <input type="number" id="i-q" placeholder="Jumlah / Unit" class="w-full p-4 border rounded-2xl outline-none">
+                 <select id="i-k" class="w-full p-4 border rounded-2xl outline-none"><option>KONDISI BAIK</option><option>RUSAK RINGAN</option><option>RUSAK BERAT</option></select>
+                 <input type="text" id="i-l" placeholder="Ruang Simpan" class="w-full p-4 border rounded-2xl outline-none">
+                 <textarea id="i-ket" placeholder="Keterangan lainnya" class="w-full p-4 border rounded-2xl outline-none" rows="2"></textarea>
+            </div>
+            <div class="flex gap-2 mt-8">
+                 <button onclick="closeModal('modal-inv')" class="flex-1 font-bold text-slate-300">BATAL</button>
+                 <button onclick="saveInv()" id="btn-save-inv" class="flex-1 btn-majesty py-4 font-black">SIMPAN STOK</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = "https://script.google.com/macros/s/AKfycbzplVy3RA0zTDjRYfrpKKcn4xjmEpqjHMKeNdaicZsRNkBhrJMrHLDK5X2igtvAIfWRNg/exec";
+        let currentUser = null, currentStream = null, currentType = "", canvas = document.createElement('canvas'), currentFacingMode = "user", qrScanner = null, tempQRId = null;
+
+        // NAV LOGIC (Back Button HP Support)
+        window.onpopstate = function() {
+            const mods = ['modal-profile','modal-edit','modal-keg','modal-inv','modal-author','m-read-keg','modal-dev'];
+            let op = false;
+            mods.forEach(id => { if(document.getElementById(id) && !document.getElementById(id).classList.contains('hidden')) { closeModal(id); op = true; } });
+            if(!op) showNav('home');
+        };
+
+        // TIMER & PWA OFFLINE ENGINE
+        if ('serviceWorker' in navigator) { window.addEventListener('load', () => { navigator.serviceWorker.register('./service-worker.js').catch(e => console.log(e)); }); }
+        setInterval(() => { const n = new Date(); document.getElementById('clock-header').innerText = n.toLocaleTimeString('id-ID'); }, 1000);
+
+        async function handleLogin() {
+            const u = document.getElementById('username').value.trim(), p = document.getElementById('password').value.trim(), b = document.getElementById('btn-login');
+            if(!u || !p) return alert("User ID & Sandi Wajib!");
+            b.innerText = "AUTHENTICATING..."; b.disabled = true;
+            try {
+                const res = await fetch(`${API_URL}?action=login&username=${u}&password=${p}`).then(r => r.json());
+                if(res.status === 'success') {
+                    currentUser = res.user; document.getElementById('login-page').classList.add('hidden');
+                    document.getElementById('main-app').classList.remove('hidden'); setupApp();
+                } else alert("Ditolak: " + res.message);
+            } catch(e) { alert("Server Down"); } finally { b.innerText = "OTENTIKASI AKUN"; b.disabled = false; }
+        }
+
+        async function setupApp() {
+            lucide.createIcons();
+            document.getElementById('header-name').innerText = currentUser.nama.split(' ')[0];
+            document.getElementById('header-role').innerText = currentUser.role.replace('_',' ');
+            document.getElementById('p-name').innerText = currentUser.nama;
+            document.getElementById('p-r-label').innerText = currentUser.role.replace('_',' ');
+            document.getElementById('pp-r').innerText = currentUser.regu || "---";
+            document.getElementById('pp-k').innerText = currentUser.kelas || "---";
+            document.getElementById('pp-nta').innerText = currentUser.nta || "---";
+            document.getElementById('p-qr').src = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${currentUser.user_id}`;
+            if(currentUser.foto && currentUser.foto !== "-") document.getElementById('p-foto').src = currentUser.foto;
+            
+            const isAdmin = currentUser.role === 'Admin', isPem = currentUser.role === 'Pembina', isDew = currentUser.role === 'Dewan_Penggalang';
+            if(isAdmin || isPem || isDew) {
+                document.getElementById('v-mgr').classList.remove('hidden');
+                document.getElementById('btn-add-keg').classList.remove('hidden');
+                document.getElementById('btn-scan-qr').classList.remove('hidden');
+                document.getElementById('btn-t-dewan').classList.remove('hidden');
+                document.getElementById('nav-i').classList.remove('hidden');
+                document.getElementById('p-input-box').classList.remove('hidden');
+                document.getElementById('i-petugas').value = currentUser.nama;
+                if(!isDew) document.getElementById('admin-reports').classList.remove('hidden');
+            } else { document.getElementById('v-usr').classList.remove('hidden'); }
+            
+            if(isAdmin || isPem) document.getElementById('nav-p').classList.add('hidden');
+            if(isAdmin) document.getElementById('btn-edit-area').classList.add('hidden');
+
+            renderS(currentUser.bintang); loadDashboard(); loadK(); loadI();
+            fetch(`${API_URL}?action=getSettings`).then(r => r.json()).then(s => document.getElementById('current-loc').innerText = s.nama);
+            showNav('home');
+        }
+
+        function renderS(c) { ['stars-top', 'p-stars', 'p-stars-ui'].forEach(id => { const con = document.getElementById(id); if(!con) return; con.innerHTML = ""; for(let i=1;i<=5;i++) con.innerHTML += `<i data-lucide="star" class="w-4 h-4 ${i <= c ? 'star-active' : 'star-dim'}"></i>`; }); lucide.createIcons(); }
+        async function loadDashboard() { const r = await fetch(`${API_URL}?action=getDashboardData`).then(r => r.json()); document.getElementById('global-persen').innerText = (r.persen || 0) + "%"; if(!document.getElementById('v-usr').classList.contains('hidden')) { document.getElementById('p-persen-txt').innerText = currentUser.persen + "% KEHADIRAN"; new Chart(document.getElementById('personal-chart'), { type:'doughnut', data:{datasets:[{data:[currentUser.h, currentUser.t-currentUser.h], backgroundColor:['#6F4E37', '#FDF8F4'], borderWidth:0}]}, options:{cutout:'80%', plugins:{legend:{display:false}}} }); const logCont = document.getElementById('personal-logs'); logCont.innerHTML = ""; currentUser.logs.forEach(l => { logCont.innerHTML += `<div class="flex justify-between bg-slate-50 p-4 rounded-3xl border border-slate-100 items-center"><div><p class="text-[9px] font-black text-slate-800 uppercase tracking-tighter">${l.w}</p><p class="text-[7px] text-slate-400 font-bold uppercase italic">${l.m}</p></div><i data-lucide="check-circle-2" class="text-green-500 w-4 h-4"></i></div>`; }); lucide.createIcons(); } }
+        function showNav(m) { history.pushState(null, null, null); document.querySelectorAll('main section').forEach(s => s.classList.add('hidden')); document.getElementById('menu-' + m).classList.remove('hidden'); document.querySelectorAll('.nav-it').forEach(n => n.classList.replace('opacity-100','opacity-50')); const nBtn = document.querySelector(`.nav-it[onclick="showNav('${m}')"]`); if(nBtn) nBtn.classList.replace('opacity-50','opacity-100'); backToSelector(); lucide.createIcons(); }
+
+        function openModal(id) { history.pushState(null, null, null); document.getElementById(id).classList.replace('hidden', 'flex'); }
+        function closeModal(id) { document.getElementById(id).classList.replace('flex', 'hidden'); }
+
+        // CAMERA & SCAN QR LOGIC
+        function openCam(t) { currentType = t; document.getElementById('selector-box').classList.add('hidden'); document.getElementById('process-area').classList.remove('hidden'); document.getElementById('video').classList.remove('hidden'); document.getElementById('selfie-btns').classList.remove('hidden'); document.getElementById('proc-label').innerText = t.toUpperCase(); openCamStream("user"); }
+        function toggleCam() { currentFacingMode = (currentFacingMode === "user") ? "environment" : "user"; stopCam(); openCamStream(currentFacingMode); }
+        function openCamStream(m) { navigator.mediaDevices.getUserMedia({video:{facingMode:m}}).then(s => { currentStream = s; document.getElementById('video').srcObject = s; }); }
+        function stopCam() { if(currentStream) { currentStream.getTracks().forEach(t => t.stop()); currentStream = null; } }
+        function backToSelector() { stopCam(); if(qrScanner) qrScanner.stop(); document.getElementById('selector-box').classList.remove('hidden'); document.getElementById('process-area').classList.add('hidden'); document.getElementById('scan-res-box').classList.add('hidden'); }
+
+        async function sendAbsen() { const b = document.getElementById('btn-final-absen'), p = document.getElementById('i-petugas').value, v = document.getElementById('video'); b.disabled = true; b.innerText = "VERIFYING GPS..."; canvas.width = v.videoWidth; canvas.height = v.videoHeight; canvas.getContext('2d').drawImage(v,0,0); navigator.geolocation.getCurrentPosition(async (pos) => { const res = await fetch(API_URL, {method: 'POST', body: JSON.stringify({ action: 'submitAbsensi', user_id: currentUser.user_id, nama: currentUser.nama, status: 'Hadir', tipe: currentType, petugas: p || "-", lat: pos.coords.latitude, long: pos.coords.longitude, foto: canvas.toDataURL('image/jpeg', 0.4), kelas: currentUser.kelas })}).then(r => r.json()); alert("BERHASIL!"); location.reload(); }); }
+        function openScanner() { document.getElementById('selector-box').classList.add('hidden'); document.getElementById('process-area').classList.remove('hidden'); document.getElementById('video').classList.add('hidden'); document.getElementById('selfie-btns').classList.add('hidden'); document.getElementById('proc-label').innerText = "DIGITAL SCANNER"; qrScanner = new Html5Qrcode("reader"); qrScanner.start({facingMode:"environment"}, {fps:10, qrbox:250}, async (id) => { qrScanner.stop(); tempQRId = id; const info = await fetch(`${API_URL}?action=getUserByQR&id=${id}`).then(r => r.json()); if(info.status === 'success') { document.getElementById('scan-res-box').classList.remove('hidden'); document.getElementById('res-nama').innerText = info.n; document.getElementById('p-input').value = currentUser.nama; } else alert(info.message); }); }
+        async function saveScanAbsen() { const p = document.getElementById('p-input').value; if(!p) return alert("Nama Petugas Wajib!"); await fetch(API_URL, {method: 'POST', body: JSON.stringify({ action: 'submitAbsensi', user_id: tempQRId, nama: document.getElementById('res-nama').innerText, status: 'Hadir', tipe: "Via QR Scan", petugas: p, ket: "Presensi Scan", kelas: "-" })}); alert("Presensi Valid!"); location.reload(); }
+
+        function openEdit() { document.getElementById('e-kelas').value = currentUser.kelas; document.getElementById('e-nta').value = currentUser.nta; document.getElementById('e-regu').value = currentUser.regu || ""; document.getElementById('e-alamat').value = currentUser.alamat || ""; document.getElementById('e-ortu').value = currentUser.ortu || ""; document.getElementById('e-kerja').value = currentUser.ortu_job || ""; openModal('modal-edit'); }
+        async function saveEdit() { if(/[^0-9]/.test(document.getElementById('e-kelas').value)) return alert("KELAS HARUS ANGKA!"); await fetch(API_URL, {method: 'POST', body: JSON.stringify({ action: 'updateProfile', row: currentUser.row, newPass: document.getElementById('e-pass').value || null, regu: document.getElementById('e-regu').value, alamat: document.getElementById('e-alamat').value, ortu: document.getElementById('e-ortu').value, ortu_job: document.getElementById('e-kerja').value, kelas: document.getElementById('e-kelas').value, nta: document.getElementById('e-nta').value })}); location.reload(); }
+        async function uploadFoto(el) { if(!el.files[0]) return; if(el.files[0].size > 500*1024) return alert("FILE KEGEDEAN (MAX 500KB)"); const r = new FileReader(); r.readAsDataURL(el.files[0]); r.onload = async (e) => { await fetch(API_URL, {method:'POST', body:JSON.stringify({action:'updatePhoto', row:currentUser.row, user_id:currentUser.user_id, foto: e.target.result})}); location.reload(); }; }
+        async function saveK() { await fetch(API_URL, {method:'POST', body:JSON.stringify({action:'addKegiatan', judul:document.getElementById('k-j').value, tgl:document.getElementById('k-t').value, kategori:"Wajib", desc:document.getElementById('k-d').value})}); location.reload(); }
+        async function loadK() { const d = await fetch(`${API_URL}?action=getKegiatan`).then(r => r.json()); const c = document.getElementById('list-keg'); c.innerHTML = ""; const isM = ['Admin','Pembina','Dewan_Penggalang'].includes(currentUser.role); if(d.length === 0) c.innerHTML = `<p class="text-center py-20 text-slate-300">Belum Ada Agenda Pusat</p>`; d.forEach(i => { c.innerHTML += `<div class="card-majesty p-7 ani-up border-l-[12px]"><div class="flex justify-between items-start"><div><h3 class="font-black text-slate-800 text-lg uppercase">${i.j}</h3><p class="text-[9px] text-slate-300 italic font-black uppercase tracking-widest">${i.t}</p></div>${isM ? `<button onclick="delK('${i.id}')" class="text-red-300"><i data-lucide="trash-2" class="w-4 h-4"></i></button>` : ''}</div><p class="mt-4 text-[11px] text-slate-500 font-medium italic opacity-80 leading-relaxed">${i.d.substring(0, 100)}...</p><button onclick="readK('${i.j}','${i.t}','${i.d}')" class="mt-4 text-[9px] font-black text-amber-600 underline underline-offset-[8px] decoration-2 decoration-amber-100 uppercase tracking-widest">Detail Agenda & PDF</button></div>`; }); lucide.createIcons(); }
+        function readK(j, t, d) { document.getElementById('rk-judul').innerText = j; document.getElementById('rk-kat').innerText = "Agenda Utama"; document.getElementById('rk-tgl').innerText = t; document.getElementById('rk-desc').innerText = d; openModal('m-read-keg'); }
+        async function dlKegPDF() { const { jsPDF } = window.jspdf; const doc = new jsPDF(); doc.text("AGENDA PUSAT SIAP WANAMSKA", 10, 20); doc.text(document.getElementById('rk-judul').innerText, 10, 30); doc.text(document.getElementById('rk-desc').innerText, 10, 40, {maxWidth:180}); doc.save("Agenda.pdf"); }
+        async function loadI() { if(!['Admin','Pembina','Dewan_Penggalang'].includes(currentUser.role)) return; const d = await fetch(`${API_URL}?action=getInventaris`).then(r => r.json()); const c = document.getElementById('list-inv'); c.innerHTML = ""; d.forEach(i => { c.innerHTML += `<div class="bg-white p-5 rounded-[30px] border shadow-sm flex justify-between items-center"><div class="text-left"><div><span class="text-[7px] font-black text-amber-600 uppercase bg-amber-50 px-2 rounded-full border border-amber-100">${i.k}</span></div><h4 class="font-black text-slate-800 uppercase mt-1 leading-none">${i.n}</h4><p class="text-[8px] font-bold text-slate-400 mt-1 uppercase italic">${i.q} Items @ ${i.l}</p></div><button onclick="delI('${i.id}')" class="text-rose-100 hover:text-rose-600 transition-all"><i data-lucide="trash"></i></button></div>`; }); lucide.createIcons(); }
+        async function saveInv() { await fetch(API_URL, {method:'POST', body:JSON.stringify({action:'addInventaris', n:document.getElementById('i-n').value, q:document.getElementById('i-q').value, k:document.getElementById('i-k').value, l:document.getElementById('i-l').value, p:currentUser.nama, ket:document.getElementById('i-ket').value})}); alert("Berhasil!"); location.reload(); }
+        async function delI(id) { if(confirm("Hapus aset?")){ await fetch(API_URL,{method:'POST', body:JSON.stringify({action:'deleteInventaris', id:id})}); loadI(); } }
+        async function delK(id) { if(confirm("Hapus agenda?")) { await fetch(API_URL, {method: 'POST', body: JSON.stringify({ action: 'deleteKegiatan', id: id })}); loadK(); } }
+        function togglePass() { const x = document.getElementById("password"); x.type = (x.type === "password") ? "text":"password"; const i = document.getElementById("eye-icon"); i.setAttribute('data-lucide', x.type==='password' ? 'eye':'eye-off'); lucide.createIcons(); }
+    </script>
+</body>
+</html>
