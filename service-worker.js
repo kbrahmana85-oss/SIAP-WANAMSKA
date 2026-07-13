@@ -1,8 +1,9 @@
 /**
  * SIAP WANAMSKA - SERVICE WORKER (OFFLINE ENGINE)
+ * Versi: 1.0.0
  */
 
-const CACHE_NAME = 'wanamska-v1';
+const CACHE_NAME = 'wanamska-majesty-v1';
 const assets = [
   './',
   './index.html',
@@ -13,19 +14,19 @@ const assets = [
   'https://cdn.jsdelivr.net/npm/chart.js'
 ];
 
-// Tahap Install: Menyimpan file ke memori HP
-self.addEventListener('install', evt => {
-  evt.waitUntil(
+// Tahap Install: Mengambil file dan menyimpannya di HP
+self.addEventListener('install', event => {
+  event.waitUntil(
     caches.open(CACHE_NAME).then(cache => {
-      console.log('Majesty Engine: Menyiapkan Mode Offline...');
+      console.log('System Offline SIAP WANAMSKA Disiapkan...');
       return cache.addAll(assets);
     })
   );
 });
 
-// Tahap Aktif: Menghapus cache lama jika ada update
-self.addEventListener('activate', evt => {
-  evt.waitUntil(
+// Tahap Activate: Menghapus cache lama jika Bapak update kode
+self.addEventListener('activate', event => {
+  event.waitUntil(
     caches.keys().then(keys => {
       return Promise.all(keys
         .filter(key => key !== CACHE_NAME)
@@ -35,11 +36,11 @@ self.addEventListener('activate', evt => {
   );
 });
 
-// Tahap Fetch: Mengambil data dari cache jika offline
-self.addEventListener('fetch', evt => {
-  evt.respondWith(
-    caches.match(evt.request).then(rec => {
-      return rec || fetch(evt.request);
+// Tahap Fetch: Jika offline, ambil file dari memori HP
+self.addEventListener('fetch', event => {
+  event.respondWith(
+    caches.match(event.request).then(response => {
+      return response || fetch(event.request);
     })
   );
 });
