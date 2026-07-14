@@ -84,49 +84,56 @@
     }
 
     function handleLogin() {
-  const id = document.getElementById('login-id').value;
-  const pass = document.getElementById('login-pass').value;
+  const idInput = document.getElementById('login-id');
+  const passInput = document.getElementById('login-pass');
+  const btn = document.getElementById('btn-login');
 
-  if (!id || !pass) {
-    return Swal.fire("Peringatan", "ID dan Sandi tidak boleh kosong!", "warning");
+  if (!idInput.value || !passInput.value) {
+    return Swal.fire("Peringatan", "ID dan Sandi harus diisi!", "warning");
   }
 
-  const btn = document.getElementById('btn-login');
-  const originalText = btn.innerText;
-  btn.innerText = "MEMVALIDASI...";
+  btn.innerHTML = '<span class="animate-pulse">MEMVALIDASI...</span>';
   btn.disabled = true;
 
-  google.script.run
-    .withSuccessHandler(res => {
-      if (res.status === "success") {
-        userData = res.user; // Simpan ke variabel global
-        
-        // Sembunyikan halaman login, tampilkan UI Utama
-        document.getElementById('page-login').classList.add('hidden');
-        document.getElementById('main-ui').classList.remove('hidden');
-        
-        // Munculkan Navigasi Bawah
-        const nav = document.getElementById('nav-bar');
-        if (nav) nav.classList.remove('hidden');
-        
-        // Update Nama di Header
-        document.getElementById('user-display-name').innerText = userData.nama;
-        
-        // Jalankan fungsi pendukung
-        if (typeof syncApp === "function") syncApp(); 
-        changePage('home'); 
-      } else {
-        Swal.fire("Gagal", res.message, "error");
-        btn.innerText = originalText;
-        btn.disabled = false;
-      }
-    })
-    .withFailureHandler(err => {
-      Swal.fire("Error Sistem", "Koneksi gagal atau script error: " + err, "error");
-      btn.innerText = originalText;
+  google.script.run.withSuccessHandler(res => {
+    if (res.status === "success") {
+      // 1. Simpan data user ke variabel global
+      userData = res.user;
+
+      // 2. Transisi Halaman (Kunci agar Dashboard Muncul)
+      document.getElementById('page-login').style.display = 'none'; // Sembunyikan Login
+      document.getElementById('main-ui').classList.remove('hidden'); // Tampilkan UI Utama
+      document.getElementById('main-ui').style.display = 'flex';     // Pastikan terlihat
+      
+      const navBar = document.getElementById('nav-bar');
+      if (navBar) navBar.classList.remove('hidden'); // Munculkan Menu Bawah
+
+      // 3. Update Informasi di Header
+      document.getElementById('user-display-name').innerText = userData.nama;
+
+      // 4. Jalankan Dashboard
+      if (typeof syncApp === "function") syncApp();
+      changePage('home');
+      
+      Swal.fire({
+        toast: true,
+        position: 'top-end',
+        icon: 'success',
+        title: 'Selamat Datang, ' + userData.nama,
+        showConfirmButton: false,
+        timer: 3000
+      });
+
+    } else {
+      Swal.fire("Gagal", res.message, "error");
+      btn.innerHTML = "MASUK";
       btn.disabled = false;
-    })
-    .loginUser(id, pass);
+    }
+  }).withFailureHandler(err => {
+    Swal.fire("Error Script", "Terjadi kesalahan pada server: " + err, "error");
+    btn.innerHTML = "MASUK";
+    btn.disabled = false;
+  }).loginUser(idInput.value, passInput.value);
 }
 
     function syncApp() { google.script.run.withSuccessHandler(res => { appConfig = res; }).getAppData(userData.id); }
