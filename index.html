@@ -1,26 +1,64 @@
-<!DOCTYPE html>
+<<!DOCTYPE html>
 <html lang="id">
 <head>
-  <meta charset="UTF-8">
-  <link rel="manifest" href="manifest.json">
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://unpkg.com/lucide@latest"></script>
-  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-  <script src="https://unpkg.com/html5-qrcode"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-  <style>
-    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;700&display=swap');
-    body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #FDF8F4; overflow-x: hidden; -webkit-tap-highlight-color: transparent; }
-    .glass { background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(15px); }
-    .tunas-center { width: 68px; height: 68px; background: #6F4E37; border: 6px solid #FDF8F4; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-top: -38px; box-shadow: 0 12px 25px rgba(111, 78, 55, 0.35); transition: all 0.3s; }
-    .tunas-center:active { transform: scale(0.9); }
-    .nav-item.active { color: #6F4E37; }
-    .card-modern { border-radius: 30px; background: white; border: 1px solid rgba(111, 78, 55, 0.05); box-shadow: 0 4px 15px rgba(0,0,0,0.02); }
-  </style>
+    <meta charset="UTF-8">
+    <!-- Meta untuk tampilan Full Screen di HP -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    
+    <title>SIAP WANAMSKA</title>
+    
+    <!-- Menghubungkan ke file Langkah 4 Bapak -->
+    <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="logo.png">
+    <link rel="icon" type="image/png" href="logo.png">
+    
+    <style>
+        body, html { 
+            margin: 0; 
+            padding: 0; 
+            height: 100%; 
+            width: 100%;
+            overflow: hidden; 
+            background-color: #FDF8F4; /* Warna latar belakang aplikasi */
+        }
+        /* Iframe ini adalah jendela yang menampilkan Aplikasi GAS Bapak */
+        iframe { 
+            width: 100%; 
+            height: 100%; 
+            border: none; 
+        }
+    </style>
 </head>
 <body>
+
+    <!-- KUNCI INTEGRASI: Ganti URL di bawah ini dengan URL Web App GAS Bapak -->
+    <iframe 
+        id="app-frame"
+        src="https://script.google.com/macros/s/AKfycbyGFxe0Avuo2FGy-9HWoc7iOMtDPJDQd8fzfmca6ZsbfJc3S_rqYq16KZ9Bf39ezJ_U/exec" 
+        allow="geolocation; camera; microphone;">
+    </iframe>
+
+    <script>
+        // Mendaftarkan Service Worker agar aplikasi bisa diinstal & support offline
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('service-worker.js')
+                .then(reg => console.log('Sistem Offline WANAMSKA Siap.'))
+                .catch(err => console.log('Gagal mendaftarkan sistem offline.', err));
+            });
+        }
+
+        // Mencegah Pull-to-refresh agar aplikasi terasa seperti APK asli
+        window.addEventListener('load', function() {
+            document.body.addEventListener('touchstart', function(e) {
+                if (e.touches.length > 1) e.preventDefault();
+            }, {passive: false});
+        });
+    </script>
+</body>
+</html>
 
   <div id="app" class="max-w-md mx-auto min-h-screen pb-24">
     
