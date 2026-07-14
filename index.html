@@ -11,8 +11,8 @@
     
     <!-- Menghubungkan ke file Langkah 4 Bapak -->
     <link rel="manifest" href="manifest.json">
-    <link rel="apple-touch-icon" href="logo.png">
-    <link rel="icon" type="image/png" href="logo.png">
+    <link rel="apple-touch-icon" href="https://kbrahmana85-oss.github.io/SIAP-WANAMSKA/logo.png">
+    <link rel="icon" type="image/png" href="https://kbrahmana85-oss.github.io/SIAP-WANAMSKA/logo.png">
     
     <style>
         body, html { 
@@ -64,7 +64,7 @@
     
     <!-- LOGIN PAGE -->
     <div id="page-login" class="flex flex-col items-center justify-center min-h-screen p-8">
-      <img src="logo.png" class="w-32 mb-6 drop-shadow-2xl">
+      <img src="https://kbrahmana85-oss.github.io/SIAP-WANAMSKA/logo.png" class="w-32 mb-6 drop-shadow-2xl">
       <h1 class="text-2xl font-bold text-[#6F4E37]">SIAP WANAMSKA</h1>
       <p class="text-xs text-gray-400 mb-8 tracking-widest uppercase">System v1.0 • Performance Optimized</p>
       
@@ -112,7 +112,7 @@
         <i data-lucide="camera" class="w-5"></i><span class="text-[9px] font-bold">ABSEN</span>
       </button>
       <button onclick="changePage('profile')" class="tunas-center">
-        <img src="logo.png" class="w-10 brightness-0 invert">
+        <img src="https://kbrahmana85-oss.github.io/SIAP-WANAMSKA/logo.png" class="w-10 brightness-0 invert">
       </button>
       <button onclick="changePage('giat')" class="nav-item flex flex-col items-center gap-1 text-gray-400">
         <i data-lucide="megaphone" class="w-5"></i><span class="text-[9px] font-bold">GIAT</span>
@@ -387,7 +387,7 @@
     function renderProfile(area) {
       area.innerHTML = `
         <div class="card-modern p-8 text-center">
-          <img src="${userData.foto || 'logo.png'}" class="w-32 h-32 rounded-full mx-auto border-4 border-[#6F4E37] object-cover mb-4">
+          <img src="${userData.foto || 'https://kbrahmana85-oss.github.io/SIAP-WANAMSKA/logo.png'}" class="w-32 h-32 rounded-full mx-auto border-4 border-[#6F4E37] object-cover mb-4">
           <h2 class="font-extrabold text-xl">${userData.nama}</h2>
           <p class="text-[10px] text-gray-400 font-bold uppercase tracking-widest">${userData.role.replace('_',' ')}</p>
           <div id="qr-mandiri" class="flex justify-center my-8"></div>
@@ -407,7 +407,7 @@
       google.script.run.withSuccessHandler(data => {
         document.getElementById('list-giat').innerHTML = data.map(g => `
           <div class="card-modern overflow-hidden">
-            <img src="${g[5] || 'logo.png'}" class="w-full h-40 object-cover">
+            <img src="${g[5] || 'https://kbrahmana85-oss.github.io/SIAP-WANAMSKA/logo.png'}" class="w-full h-40 object-cover">
             <div class="p-5">
               <div class="flex justify-between text-[10px] mb-2"><span class="font-bold text-orange-600 uppercase">${g[3]}</span><span class="text-gray-400">${g[2]}</span></div>
               <h3 class="font-bold text-gray-800 mb-3">${g[1]}</h3>
